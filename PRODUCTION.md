@@ -15,19 +15,13 @@ ssh root@your-server-ip
 
 ### 2. Run the deployment script
 ```bash
-# Download and run deployment
+# Download and run deployment (replace 'your_postgres_password' with actual password)
 wget https://raw.githubusercontent.com/rbradshaw9/infusion-webinarfuel-constent-reg/main/deploy.sh
 chmod +x deploy.sh
-sudo ./deploy.sh bridge.thecashflowacademy.com admin@thecashflowacademy.com
+sudo ./deploy.sh bridge.thecashflowacademy.com admin@thecashflowacademy.com your_postgres_password
 ```
 
-### 3. Configure database password
-```bash
-sudo nano /var/www/webinar-bridge/backend/.env
-```
-Update the `DB_PASSWORD` line with your actual PostgreSQL password.
-
-### 4. Initialize database (on PostgreSQL server 198.199.69.39)
+### 3. Initialize database (on PostgreSQL server 198.199.69.39)
 ```bash
 # Connect to PostgreSQL server
 ssh postgres@198.199.69.39
@@ -37,14 +31,7 @@ createdb webinar_bridge
 psql -d webinar_bridge -f /path/to/init.sql
 ```
 
-### 5. Create admin user (back on web server)
-```bash
-cd /var/www/webinar-bridge
-source backend/.env
-node database/create-admin.js
-```
-
-### 6. Restart and verify
+### 4. Restart and verify (if needed)
 ```bash
 sudo systemctl restart webinar-bridge
 sudo systemctl status webinar-bridge

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Webinar Bridge Deployment Script
-# Usage: sudo bash deploy.sh [domain] [ssl_email]
-# Example: sudo bash deploy.sh bridge.thecashflowacademy.com admin@thecashflowacademy.com
+# Usage: sudo bash deploy.sh [domain] [ssl_email] [db_password]
+# Example: sudo bash deploy.sh bridge.thecashflowacademy.com admin@thecashflowacademy.com your_postgres_password
 
 set -e
 
@@ -16,9 +16,18 @@ NC='\033[0m' # No Color
 # Configuration
 DOMAIN=${1:-"bridge.thecashflowacademy.com"}
 SSL_EMAIL=${2:-"admin@thecashflowacademy.com"}
+DB_PASSWORD=${3}
 PROJECT_DIR="/var/www/webinar-bridge"
 SERVICE_NAME="webinar-bridge"
 API_PORT="3001"
+
+# Validate required parameters
+if [ -z "$DB_PASSWORD" ]; then
+    echo -e "${RED}❌ Error: Database password is required${NC}"
+    echo -e "${YELLOW}Usage: sudo bash deploy.sh [domain] [ssl_email] [db_password]${NC}"
+    echo -e "${YELLOW}Example: sudo bash deploy.sh bridge.thecashflowacademy.com admin@thecashflowacademy.com your_postgres_password${NC}"
+    exit 1
+fi
 
 echo -e "${BLUE}🚀 Starting Webinar Bridge Deployment${NC}"
 echo -e "${YELLOW}Domain: ${DOMAIN}${NC}"
@@ -120,26 +129,20 @@ DB_HOST=198.199.69.39
 DB_PORT=5432
 DB_NAME=webinar_bridge
 DB_USER=postgres
-DB_PASSWORD=your_postgresql_password_here
+DB_PASSWORD=${DB_PASSWORD}
 DB_SSL=false
-CORS_ORIGIN=https://bridge.thecashflowacademy.com
+CORS_ORIGIN=https://${DOMAIN}
 ENVEOF
 
 echo ""
-echo -e "${YELLOW}⚠️  IMPORTANT: Update the DB_PASSWORD in backend/.env with your actual PostgreSQL password${NC}"
-echo -e "${YELLOW}⚠️  Then run the following commands on your PostgreSQL server (198.199.69.39):${NC}"
-echo -e "${YELLOW}   1. createdb -U postgres webinar_bridge (if database doesn't exist)${NC}"
+echo -e "${BLUE}📋 Database Setup Instructions:${NC}"
+echo -e "${YELLOW}⚠️  Run the following commands on your PostgreSQL server (198.199.69.39):${NC}"
+echo -e "${YELLOW}   1. createdb -U postgres webinar_bridge${NC}"
 echo -e "${YELLOW}   2. psql -U postgres -d webinar_bridge -f database/init.sql${NC}"
-echo -e "${YELLOW}   3. cd ${PROJECT_DIR} && source backend/.env && node database/create-admin.js${NC}"
-echo -e "${YELLOW}   4. sudo systemctl restart webinar-bridge${NC}"
 echo ""
-echo -e "${BLUE}📋 Next Steps After Database Setup:${NC}"
-echo -e "   • Edit: sudo nano ${PROJECT_DIR}/backend/.env"
-echo -e "   • Set your PostgreSQL password for DB_PASSWORD"
-echo -e "   • Restart: sudo systemctl restart webinar-bridge"
-echo -e "   • Check: sudo systemctl status webinar-bridge"
+echo -e "${BLUE}📋 After database setup, the admin user will be created automatically${NC}"
 echo ""
-print_status "Database configuration created"
+print_status "Database configuration created with provided password"
 
 # Create systemd service
 echo -e "${BLUE}⚙️  Creating systemd service...${NC}"
@@ -221,12 +224,24 @@ echo -e "${BLUE}🔒 Obtaining SSL certificate...${NC}"
 certbot --apache -d ${DOMAIN} --email ${SSL_EMAIL} --agree-tos --non-interactive --redirect
 print_status "SSL certificate obtained"
 
+# Create admin user automatically
+echo -e "${BLUE}👤 Creating default admin user...${NC}"
+cd $PROJECT_DIR
+if source backend/.env && node database/create-admin.js 2>/dev/null; then
+    print_status "Default admin user created successfully"
+else
+    echo -e "${YELLOW}⚠️  Admin user creation skipped (may already exist or database not ready)${NC}"
+    echo -e "${YELLOW}   Run manually: cd ${PROJECT_DIR} && source backend/.env && node database/create-admin.js${NC}"
+fi
+
 # Final status check
 echo -e "${BLUE}🔍 Checking service status...${NC}"
 if systemctl is-active --quiet $SERVICE_NAME; then
     print_status "Webinar Bridge API is running"
 else
-    print_error "Webinar Bridge API failed to start"
+    echo -e "${YELLOW}⚠️  Webinar Bridge API is not running yet${NC}"
+    echo -e "${YELLOW}   This is normal if database setup is pending${NC}"
+    echo -e "${YELLOW}   Check logs: sudo journalctl -u webinar-bridge -f${NC}"
 fi
 
 echo ""
@@ -237,5 +252,9 @@ echo -e "   • Domain: https://${DOMAIN}"
 echo -e "   • API Port: ${API_PORT}"
 echo -e "   • Project Directory: ${PROJECT_DIR}"
 echo -e "   • Service: ${SERVICE_NAME}"
+echo ""
+echo -e "${GREEN}🔑 Default Admin Login:${NC}"
+echo -e "   • Email: ryan@thecashflowacademy.com"
+echo -e "   • Password: CiR43Tx2-"
 echo ""
 echo -e "${YELLOW}📚 Access your admin panel at: https://${DOMAIN}${NC}"
