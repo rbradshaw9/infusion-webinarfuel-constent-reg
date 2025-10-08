@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 DOMAIN=${1:-"bridge.thecashflowacademy.com"}
-SSL_EMAIL=${2:-"admin@thecashflowacademy.com"}
+SSL_EMAIL=${2:-"ryan@thecashflowacademy.com"}
 DB_PASSWORD=${3}
 PROJECT_DIR="/var/www/webinar-bridge"
 SERVICE_NAME="webinar-bridge"
@@ -74,7 +74,9 @@ print_status "Project directory created"
 # Clone application from GitHub
 echo -e "${BLUE}📂 Cloning application from GitHub...${NC}"
 if [ -d ".git" ]; then
-    echo "Repository already exists, pulling latest changes..."
+    echo "Repository already exists, forcing latest changes..."
+    git reset --hard HEAD >/dev/null 2>&1 || true
+    git clean -fd >/dev/null 2>&1 || true
     git pull origin main
 else
     # Clean directory and clone fresh

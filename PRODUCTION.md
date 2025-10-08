@@ -18,7 +18,7 @@ ssh root@your-server-ip
 # Download and run deployment (replace 'your_postgres_password' with actual password)
 wget https://raw.githubusercontent.com/rbradshaw9/infusion-webinarfuel-constent-reg/main/deploy.sh
 chmod +x deploy.sh
-sudo ./deploy.sh bridge.thecashflowacademy.com admin@thecashflowacademy.com your_postgres_password
+sudo ./deploy.sh bridge.thecashflowacademy.com ryan@thecashflowacademy.com your_postgres_password
 ```
 
 ### 3. Initialize database (on PostgreSQL server 198.199.69.39)
