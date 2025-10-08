@@ -127,8 +127,7 @@ router.put('/bearer-token', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'Bearer token is required' });
     }
 
-    const Database = require('../models/database');
-    const db = new Database();
+  const db = require('../models/database');
     await db.run(
       'UPDATE users SET bearer_token = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
       [bearer_token, req.user.userId]

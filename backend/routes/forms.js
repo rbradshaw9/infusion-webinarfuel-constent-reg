@@ -41,42 +41,30 @@ router.post('/', authenticateToken, async (req, res) => {
   try {
     const {
       name,
-      infusionsoft_html,
-      webinar_fuel_url,
-      session_id,
-      widget_id,
-      widget_version
+      infusionsoft_app,
+      infusionsoft_form_id,
+      webinarfuel_webinar_id,
+      webinarfuel_api_key,
+      custom_fields,
+      settings
     } = req.body;
 
     // Validate required fields
-    if (!name || !infusionsoft_html || !session_id || !widget_id || !widget_version) {
+    if (!name || !infusionsoft_app || !infusionsoft_form_id || !webinarfuel_webinar_id || !webinarfuel_api_key) {
       return res.status(400).json({ 
-        error: 'Missing required fields: name, infusionsoft_html, session_id, widget_id, widget_version' 
+        error: 'Missing required fields: name, infusionsoft_app, infusionsoft_form_id, webinarfuel_webinar_id, webinarfuel_api_key' 
       });
     }
 
-    // Parse WebinarFuel URL if provided
-    let parsedWidgetId = widget_id;
-    let parsedVersion = widget_version;
-    
-    if (webinar_fuel_url) {
-      const urlMatch = webinar_fuel_url.match(/\/widgets\/(\d+)\/(\d+)\/elements/);
-      if (urlMatch) {
-        parsedWidgetId = urlMatch[1];
-        parsedVersion = urlMatch[2];
-      }
-    }
-
     const formData = {
-      id: uuidv4(),
       user_id: req.user.userId,
       name,
-      infusionsoft_html,
-      webinar_fuel_url: webinar_fuel_url || null,
-      session_id,
-      widget_id: parsedWidgetId,
-      widget_version: parsedVersion,
-      status: 'draft'
+      infusionsoft_app,
+      infusionsoft_form_id,
+      webinarfuel_webinar_id,
+      webinarfuel_api_key,
+      custom_fields: custom_fields || {},
+      settings: settings || {}
     };
 
     const formId = await createForm(formData);
@@ -104,13 +92,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
       return res.status(404).json({ error: 'Form not found' });
     }
 
-    // Parse WebinarFuel URL if provided
-    if (updates.webinar_fuel_url) {
-      const urlMatch = updates.webinar_fuel_url.match(/\/widgets\/(\d+)\/(\d+)\/elements/);
-      if (urlMatch) {
-        updates.widget_id = urlMatch[1];
-        updates.widget_version = urlMatch[2];
-      }
+    // Ensure JSON fields are objects if provided
+    if (updates.custom_fields && typeof updates.custom_fields !== 'object') {
+      try { updates.custom_fields = JSON.parse(updates.custom_fields); } catch (_) {}
+    }
+    if (updates.settings && typeof updates.settings !== 'object') {
+      try { updates.settings = JSON.parse(updates.settings); } catch (_) {}
     }
 
     await updateForm(formId, updates);

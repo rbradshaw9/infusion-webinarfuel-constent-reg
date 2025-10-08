@@ -1,10 +1,22 @@
 #!/usr/bin/env node
-const bcrypt = require('bcryptjs');
+require('dotenv').config({ path: require('path').join(__dirname, '../backend/.env') });
+let bcrypt;
+try {
+  // Try to resolve from backend's node_modules when run from repo root
+  bcrypt = require('bcryptjs');
+} catch (e) {
+  try {
+    bcrypt = require('../backend/node_modules/bcryptjs');
+  } catch (e2) {
+    console.error('Cannot load bcryptjs. Ensure you ran npm install in backend/.');
+    process.exit(1);
+  }
+}
 const { Pool } = require('pg');
 
 // Database configuration
 const pool = new Pool({
-  host: process.env.DB_HOST || '198.199.69.39',
+  host: process.env.DB_HOST || '127.0.0.1',
   port: process.env.DB_PORT || 5432,
   database: process.env.DB_NAME || 'webinar_bridge',
   user: process.env.DB_USER || 'postgres',

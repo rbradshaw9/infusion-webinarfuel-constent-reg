@@ -8,19 +8,13 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const formsRoutes = require('./routes/forms');
 const generateRoutes = require('./routes/generate');
-const Database = require('./models/database');
+// Use the shared database instance
+const db = require('./models/database');
 
 const app = express();
 
-// Initialize database connection
-const db = new Database();
-db.connect().then(() => {
-  console.log('✅ Database connected successfully');
-}).catch(err => {
-  console.error('❌ Database connection failed:', err.message);
-  console.error('🔧 Please check your database configuration in .env file');
-  // Don't exit - allow server to start for debugging
-});
+// Database connection is initialized on import in models/database.js
+// Any connection errors will be logged there.
 const PORT = process.env.PORT || 3001;
 
 // Security middleware
