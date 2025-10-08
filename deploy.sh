@@ -62,11 +62,15 @@ mkdir -p $PROJECT_DIR/{backend,frontend,generated,logs,database}
 cd $PROJECT_DIR
 print_status "Project directory created"
 
-# Copy application files from current directory
-echo -e "${BLUE}📂 Copying application files...${NC}"
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cp -r $SCRIPT_DIR/* ./ 2>/dev/null || echo "Copying from script directory"
-print_status "Application files copied"
+# Clone application from GitHub
+echo -e "${BLUE}📂 Cloning application from GitHub...${NC}"
+if [ -d ".git" ]; then
+    echo "Repository already exists, pulling latest changes..."
+    git pull origin main
+else
+    git clone https://github.com/rbradshaw9/infusion-webinarfuel-constent-reg.git .
+fi
+print_status "Application files cloned from GitHub"
 
 # Set ownership and permissions
 chown -R www-data:www-data $PROJECT_DIR
