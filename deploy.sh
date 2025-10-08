@@ -68,6 +68,9 @@ if [ -d ".git" ]; then
     echo "Repository already exists, pulling latest changes..."
     git pull origin main
 else
+    # Clean directory and clone fresh
+    rm -rf ./* >/dev/null 2>&1 || true
+    rm -rf ./.* >/dev/null 2>&1 || true
     git clone https://github.com/rbradshaw9/infusion-webinarfuel-constent-reg.git .
 fi
 print_status "Application files cloned from GitHub"
