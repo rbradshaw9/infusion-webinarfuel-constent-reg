@@ -1,17 +1,35 @@
 #!/usr/bin/env node
-require('dotenv').config({ path: require('path').join(__dirname, '../backend/.env') });
+const path = require('path');
+
+// Try to load dotenv from backend node_modules
+let dotenv;
+try {
+  dotenv = require('dotenv');
+} catch (e) {
+  try {
+    dotenv = require('../backend/node_modules/dotenv');
+  } catch (e2) {
+    console.error('Cannot load dotenv. Run this script from backend directory: cd backend && node ../database/create-admin.js');
+    process.exit(1);
+  }
+}
+
+// Load .env from backend directory
+dotenv.config({ path: path.join(__dirname, '../backend/.env') });
+
+// Try to load bcryptjs
 let bcrypt;
 try {
-  // Try to resolve from backend's node_modules when run from repo root
   bcrypt = require('bcryptjs');
 } catch (e) {
   try {
     bcrypt = require('../backend/node_modules/bcryptjs');
   } catch (e2) {
-    console.error('Cannot load bcryptjs. Ensure you ran npm install in backend/.');
+    console.error('Cannot load bcryptjs. Run this script from backend directory: cd backend && node ../database/create-admin.js');
     process.exit(1);
   }
 }
+
 const { Pool } = require('pg');
 
 // Database configuration
