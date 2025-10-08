@@ -15,11 +15,17 @@ ssh root@your-server-ip
 
 ### 2. Run the deployment script
 ```bash
-# Download and run deployment (replace 'your_postgres_password' with actual password)
+# Download and run deployment (use your actual PostgreSQL password)
 wget https://raw.githubusercontent.com/rbradshaw9/infusion-webinarfuel-constent-reg/main/deploy.sh
 chmod +x deploy.sh
-sudo ./deploy.sh bridge.thecashflowacademy.com ryan@thecashflowacademy.com your_postgres_password
+sudo ./deploy.sh bridge.thecashflowacademy.com ryan@thecashflowacademy.com your_actual_postgres_password
 ```
+
+**Note:** The PostgreSQL database should already be set up on 198.199.69.39 with:
+- Database: `webinar_bridge` 
+- Tables: `users` and `forms` created
+- Remote connections enabled
+- Password configured for `postgres` user
 
 ### 3. Initialize database (on PostgreSQL server 198.199.69.39)
 ```bash
