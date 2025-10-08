@@ -19,10 +19,21 @@ class Database {
     try {
       const client = await this.pool.connect();
       console.log('✅ Connected to PostgreSQL database');
+      console.log(`🔗 Host: ${this.pool.options.host}:${this.pool.options.port}`);
+      console.log(`📊 Database: ${this.pool.options.database}`);
       client.release();
       return Promise.resolve();
     } catch (err) {
       console.error('❌ Database connection error:', err.message);
+      console.error('🔧 Connection details:');
+      console.error(`   Host: ${this.pool.options.host}:${this.pool.options.port}`);
+      console.error(`   Database: ${this.pool.options.database}`);
+      console.error(`   User: ${this.pool.options.user}`);
+      console.error('💡 Please check:');
+      console.error('   - Database server is running');
+      console.error('   - Database exists');
+      console.error('   - Credentials are correct');
+      console.error('   - Network connectivity');
       throw err;
     }
   }

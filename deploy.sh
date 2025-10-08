@@ -108,11 +108,14 @@ fi
 echo -e "${BLUE}🗄️  Setting up database connection...${NC}"
 cd $PROJECT_DIR
 
+# Generate JWT secret
+JWT_SECRET=$(openssl rand -base64 32)
+
 # Create .env file for backend with PostgreSQL configuration
-cat > backend/.env << 'ENVEOF'
+cat > backend/.env << ENVEOF
 NODE_ENV=production
 PORT=3001
-JWT_SECRET=$(openssl rand -base64 32)
+JWT_SECRET=${JWT_SECRET}
 DB_HOST=198.199.69.39
 DB_PORT=5432
 DB_NAME=webinar_bridge
@@ -125,8 +128,16 @@ ENVEOF
 echo ""
 echo -e "${YELLOW}⚠️  IMPORTANT: Update the DB_PASSWORD in backend/.env with your actual PostgreSQL password${NC}"
 echo -e "${YELLOW}⚠️  Then run the following commands on your PostgreSQL server (198.199.69.39):${NC}"
-echo -e "${YELLOW}   1. psql -U postgres -d webinar_bridge -f database/init.sql${NC}"
-echo -e "${YELLOW}   2. cd ${PROJECT_DIR} && source backend/.env && node database/create-admin.js${NC}"
+echo -e "${YELLOW}   1. createdb -U postgres webinar_bridge (if database doesn't exist)${NC}"
+echo -e "${YELLOW}   2. psql -U postgres -d webinar_bridge -f database/init.sql${NC}"
+echo -e "${YELLOW}   3. cd ${PROJECT_DIR} && source backend/.env && node database/create-admin.js${NC}"
+echo -e "${YELLOW}   4. sudo systemctl restart webinar-bridge${NC}"
+echo ""
+echo -e "${BLUE}📋 Next Steps After Database Setup:${NC}"
+echo -e "   • Edit: sudo nano ${PROJECT_DIR}/backend/.env"
+echo -e "   • Set your PostgreSQL password for DB_PASSWORD"
+echo -e "   • Restart: sudo systemctl restart webinar-bridge"
+echo -e "   • Check: sudo systemctl status webinar-bridge"
 echo ""
 print_status "Database configuration created"
 
@@ -166,7 +177,7 @@ a2enmod rewrite proxy proxy_http ssl headers
 cat > /etc/apache2/sites-available/${DOMAIN}.conf << EOF
 <VirtualHost *:80>
     ServerName ${DOMAIN}
-    DocumentRoot ${PROJECT_DIR}/frontend/dist
+    DocumentRoot ${PROJECT_DIR}/frontend/build
     
     # Redirect API calls to Node.js backend
     ProxyPreserveHost On
@@ -182,7 +193,7 @@ cat > /etc/apache2/sites-available/${DOMAIN}.conf << EOF
     </Directory>
     
     # Frontend files
-    <Directory "${PROJECT_DIR}/frontend/dist">
+    <Directory "${PROJECT_DIR}/frontend/build">
         Options -Indexes +FollowSymLinks
         AllowOverride All
         Require all granted
