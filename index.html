@@ -629,6 +629,15 @@
         const stored = localStorage.getItem(app.STORAGE_KEYS.FORMS);
         app.forms = stored ? JSON.parse(stored) : [];
       }
+
+      // Ensure backward compatibility - add new fields to existing forms
+      app.forms = app.forms.map(form => ({
+        ...form,
+        form_type: form.form_type || 'standard_registration',
+        wf_embed_id: form.wf_embed_id || '',
+        wf_date_selector_id: form.wf_date_selector_id || '',
+        enable_date_parsing: form.enable_date_parsing || false
+      }));
     }
 
     async function saveForms() {
@@ -653,19 +662,26 @@
       const name = prompt('Enter form name:');
       if (!name) return;
 
+      const formType = prompt('Form type:\n1. Standard Registration Form (default)\n2. Automated Webinar Bridge\nEnter 1 or 2:', '1');
+      const isAutomated = formType === '2';
+
       const newForm = {
         id: Date.now().toString(),
         name: name,
+        form_type: isAutomated ? 'automated_webinar' : 'standard_registration',
         infusionsoft_action: '',
         infusionsoft_xid: '',
         infusionsoft_form_name: '',
         wf_session_id: '',
         wf_widget_id: '',
         wf_widget_version: '',
+        wf_embed_id: '', // New field for automated webinars
+        wf_date_selector_id: '', // New field for date parsing webinars
+        enable_date_parsing: false, // New field
         consent_id: 'inf_option_SMSConsent',
         consent_value: '3872',
         consent_message: 'By checking this box, I agree to receive text messages (such as reminders, updates, and promotional offers) from The Cash Flow Academy at the mobile number provided. Message and data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply STOP to unsubscribe.',
-        button_text: '🔥 Reserve My Free Seat Now',
+        button_text: isAutomated ? 'Save Your Seat Now' : '🔥 Reserve My Free Seat Now',
         is_replay: false,
         created: new Date().toISOString()
       };
@@ -713,6 +729,15 @@
           <input type="text" id="formName" value="${escapeHtml(app.currentForm.name)}">
         </div>
 
+        <div class="form-group">
+          <label>Form Type</label>
+          <select id="formType" value="${app.currentForm.form_type || 'standard_registration'}">
+            <option value="standard_registration" ${(app.currentForm.form_type || 'standard_registration') === 'standard_registration' ? 'selected' : ''}>📝 Standard Registration Form</option>
+            <option value="automated_webinar" ${app.currentForm.form_type === 'automated_webinar' ? 'selected' : ''}>🤖 Automated Webinar Bridge</option>
+          </select>
+          <small>Standard forms generate complete registration pages. Automated bridges capture existing WebinarFuel embeds and submit to Infusionsoft.</small>
+        </div>
+
         ${!hasBearerToken ? `
         <div class="info-box" style="background: #fef3c7; border-color: #fbbf24;">
           <div style="color: #92400e; font-weight: 600; margin-bottom: 5px;">⚠️ Bearer Token Required</div>
@@ -723,19 +748,39 @@
         ` : ''}
 
         <div class="section-title">⚡ Quick Import</div>
-        
-        <div class="form-group">
-          <label>Paste Infusionsoft Form HTML</label>
-          <textarea id="infusionsoftPaste" placeholder="Paste your entire Infusionsoft <form> HTML here and we'll extract the values automatically..." rows="4"></textarea>
-          <button class="btn-secondary btn-small" onclick="window.extractInfusionsoft()" style="margin-top: 8px;">🔍 Extract Infusionsoft Data</button>
-        </div>
 
-        <div class="form-group">
-          <label>WebinarFuel Widget URL</label>
-          <input type="url" id="webinarFuelUrl" placeholder="https://app.webinarfuel.com/webinars/18213/widgets/72956/124066/elements">
-          <button class="btn-secondary btn-small" onclick="window.extractWebinarFuel()" style="margin-top: 8px;">🔍 Extract WebinarFuel Data</button>
-          <small>Paste the WebinarFuel widget URL to extract Widget ID and Version</small>
-        </div>
+        ${app.currentForm.form_type === 'automated_webinar' ? `
+          <div class="form-group">
+            <label>🧠 Smart Extract - Paste WebinarFuel Embed Code</label>
+            <textarea id="wfEmbedPaste" placeholder="<script src=&quot;https://d3pw37i36t41cq.cloudfront.net/embed_v2.js&quot; async></script>
+<div class=&quot;wf_target wf_target_LY6KyvxuWicTQtyH1PEDMpdh&quot;></div>
+<script>
+  window._wf = window._wf || [];
+  _wf.push({ id: 'LY6KyvxuWicTQtyH1PEDMpdh' });
+</script>" rows="6"></textarea>
+            <button class="btn-primary btn-small" onclick="window.smartExtractWebinarFuel()" style="margin-top: 8px;">🚀 Smart Extract & Auto-Configure</button>
+            <small>Paste the complete WebinarFuel embed code and we'll automatically extract all configuration and detect if date parsing is needed!</small>
+          </div>
+
+          <div class="form-group">
+            <label>Paste Infusionsoft Form HTML</label>
+            <textarea id="infusionsoftPaste" placeholder="Paste your entire Infusionsoft <form> HTML here and we'll extract the values automatically..." rows="4"></textarea>
+            <button class="btn-secondary btn-small" onclick="window.extractInfusionsoft()" style="margin-top: 8px;">🔍 Extract Infusionsoft Data</button>
+          </div>
+        ` : `
+          <div class="form-group">
+            <label>Paste Infusionsoft Form HTML</label>
+            <textarea id="infusionsoftPaste" placeholder="Paste your entire Infusionsoft <form> HTML here and we'll extract the values automatically..." rows="4"></textarea>
+            <button class="btn-secondary btn-small" onclick="window.extractInfusionsoft()" style="margin-top: 8px;">🔍 Extract Infusionsoft Data</button>
+          </div>
+
+          <div class="form-group">
+            <label>WebinarFuel Widget URL</label>
+            <input type="url" id="webinarFuelUrl" placeholder="https://app.webinarfuel.com/webinars/18213/widgets/72956/124066/elements">
+            <button class="btn-secondary btn-small" onclick="window.extractWebinarFuel()" style="margin-top: 8px;">🔍 Extract WebinarFuel Data</button>
+            <small>Paste the WebinarFuel widget URL to extract Widget ID and Version</small>
+          </div>
+        `}
 
         <div class="section-divider"></div>
         <div class="section-title">📧 Infusionsoft Configuration</div>
@@ -764,26 +809,51 @@
         <div class="section-divider"></div>
         <div class="section-title">🎥 WebinarFuel Configuration</div>
 
-        <div class="form-group">
-          <label>WebinarFuel Session ID</label>
-          <input type="text" id="wfSessionId" value="${escapeHtml(app.currentForm.wf_session_id)}" 
-                 placeholder="68133">
-          <small>The webinar session ID (unique per webinar)</small>
-        </div>
+        ${app.currentForm.form_type === 'automated_webinar' ? `
+          <div class="form-group">
+            <label>WebinarFuel Embed ID</label>
+            <input type="text" id="wfEmbedId" value="${escapeHtml(app.currentForm.wf_embed_id || '')}" 
+                   placeholder="5jU4cf6YiM1qF1AKH5JuuDZi">
+            <small>The WebinarFuel embed ID from the script (window._wf.push({ id: 'xxx' }))</small>
+          </div>
 
-        <div class="form-group">
-          <label>WebinarFuel Widget ID</label>
-          <input type="text" id="wfWidgetId" value="${escapeHtml(app.currentForm.wf_widget_id)}" 
-                 placeholder="78139">
-          <small>The widget ID for this webinar</small>
-        </div>
+          <div class="form-group">
+            <label class="checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+              <input type="checkbox" id="enableDateParsing" ${app.currentForm.enable_date_parsing ? 'checked' : ''} 
+                     style="width: auto; cursor: pointer;" />
+              <span>📅 Enable Date Parsing & Display</span>
+            </label>
+            <small>Extract next webinar date from WebinarFuel and display it on page elements</small>
+          </div>
 
-        <div class="form-group">
-          <label>WebinarFuel Widget Version</label>
-          <input type="text" id="wfWidgetVersion" value="${escapeHtml(app.currentForm.wf_widget_version)}" 
-                 placeholder="129684">
-          <small>The widget version ID</small>
-        </div>
+          <div class="form-group" id="dateSelectorGroup" ${!app.currentForm.enable_date_parsing ? 'style="display: none;"' : ''}>
+            <label>Date Selector WebinarFuel ID (Optional)</label>
+            <input type="text" id="wfDateSelectorId" value="${escapeHtml(app.currentForm.wf_date_selector_id || '')}" 
+                   placeholder="UfDxGDN8mEnZwtPxjPgqAFcs">
+            <small>Separate hidden embed ID for date extraction (if different from main embed)</small>
+          </div>
+        ` : `
+          <div class="form-group">
+            <label>WebinarFuel Session ID</label>
+            <input type="text" id="wfSessionId" value="${escapeHtml(app.currentForm.wf_session_id)}" 
+                   placeholder="68133">
+            <small>The webinar session ID (unique per webinar)</small>
+          </div>
+
+          <div class="form-group">
+            <label>WebinarFuel Widget ID</label>
+            <input type="text" id="wfWidgetId" value="${escapeHtml(app.currentForm.wf_widget_id)}" 
+                   placeholder="78139">
+            <small>The widget ID for this webinar</small>
+          </div>
+
+          <div class="form-group">
+            <label>WebinarFuel Widget Version</label>
+            <input type="text" id="wfWidgetVersion" value="${escapeHtml(app.currentForm.wf_widget_version)}" 
+                   placeholder="129684">
+            <small>The widget version ID</small>
+          </div>
+        `}
 
         <div class="section-divider"></div>
         <div class="section-title">🎨 Customization</div>
@@ -829,6 +899,20 @@
           <button class="btn-danger" onclick="window.deleteCurrentForm()">🗑️ Delete Form</button>
         </div>
       `;
+
+      // Add event listeners after DOM is rendered
+      setTimeout(() => {
+        const formTypeSelect = document.getElementById('formType');
+        const enableDateParsingCheck = document.getElementById('enableDateParsing');
+        
+        if (formTypeSelect) {
+          formTypeSelect.addEventListener('change', window.handleFormTypeChange);
+        }
+        
+        if (enableDateParsingCheck) {
+          enableDateParsingCheck.addEventListener('change', window.handleDateParsingToggle);
+        }
+      }, 100);
     }
 
     function showEmptyEditor() {
@@ -846,12 +930,30 @@
       if (!app.currentForm) return;
 
       app.currentForm.name = document.getElementById('formName').value;
+      app.currentForm.form_type = document.getElementById('formType').value;
       app.currentForm.infusionsoft_action = document.getElementById('infusionsoftAction').value;
       app.currentForm.infusionsoft_xid = document.getElementById('infusionsoftXid').value;
       app.currentForm.infusionsoft_form_name = document.getElementById('infusionsoftFormName').value;
-      app.currentForm.wf_session_id = document.getElementById('wfSessionId').value;
-      app.currentForm.wf_widget_id = document.getElementById('wfWidgetId').value;
-      app.currentForm.wf_widget_version = document.getElementById('wfWidgetVersion').value;
+      
+      // Save different fields based on form type
+      if (app.currentForm.form_type === 'automated_webinar') {
+        app.currentForm.wf_embed_id = document.getElementById('wfEmbedId')?.value || '';
+        app.currentForm.enable_date_parsing = document.getElementById('enableDateParsing')?.checked || false;
+        app.currentForm.wf_date_selector_id = document.getElementById('wfDateSelectorId')?.value || '';
+        // Clear standard fields for automated webinars
+        app.currentForm.wf_session_id = '';
+        app.currentForm.wf_widget_id = '';
+        app.currentForm.wf_widget_version = '';
+      } else {
+        app.currentForm.wf_session_id = document.getElementById('wfSessionId')?.value || '';
+        app.currentForm.wf_widget_id = document.getElementById('wfWidgetId')?.value || '';
+        app.currentForm.wf_widget_version = document.getElementById('wfWidgetVersion')?.value || '';
+        // Clear automated fields for standard forms
+        app.currentForm.wf_embed_id = '';
+        app.currentForm.enable_date_parsing = false;
+        app.currentForm.wf_date_selector_id = '';
+      }
+      
       app.currentForm.consent_id = document.getElementById('consentId').value;
       app.currentForm.consent_value = document.getElementById('consentValue').value;
       app.currentForm.consent_message = document.getElementById('consentMessage').value;
@@ -861,6 +963,27 @@
       await saveForms();
       renderFormsList();
       showToast('Form saved! 💾', 'success');
+      
+      // Re-render editor if form type changed to update fields
+      const formTypeChanged = document.getElementById('formType').value !== app.currentForm.form_type;
+      if (formTypeChanged) {
+        await renderFormEditor();
+      }
+    };
+
+    // Form type switching and event handlers
+    window.handleFormTypeChange = async function() {
+      if (!app.currentForm) return;
+      app.currentForm.form_type = document.getElementById('formType').value;
+      await renderFormEditor();
+    };
+
+    window.handleDateParsingToggle = function() {
+      const enabled = document.getElementById('enableDateParsing').checked;
+      const group = document.getElementById('dateSelectorGroup');
+      if (group) {
+        group.style.display = enabled ? 'block' : 'none';
+      }
     };
 
     window.deleteCurrentForm = async function() {
@@ -999,6 +1122,187 @@
       }
     };
 
+    // Smart Extract for Automated Webinars
+    window.smartExtractWebinarFuel = async function() {
+      const embedCode = document.getElementById('wfEmbedPaste').value;
+      if (!embedCode) {
+        showToast('Please paste WebinarFuel embed code first ❌');
+        return;
+      }
+
+      console.log('🧠 Smart Extract: Starting analysis...');
+      console.log('📋 Embed code length:', embedCode.length, 'characters');
+
+      try {
+        showToast('🧠 Smart extracting... This may take a moment', 'info');
+        
+        // 1. Extract embed ID from the pasted code
+        console.log('🔍 Step 1: Extracting embed ID from code...');
+        const embedIdMatch = embedCode.match(/wf_target_([A-Za-z0-9_]+)/);
+        const scriptIdMatch = embedCode.match(/id:\s*['"]([A-Za-z0-9_]+)['"]/);
+        
+        console.log('📝 Embed ID regex matches:', {
+          targetMatch: embedIdMatch,
+          scriptMatch: scriptIdMatch
+        });
+        
+        const embedId = embedIdMatch?.[1] || scriptIdMatch?.[1];
+        
+        if (!embedId) {
+          console.error('❌ Smart Extract: No embed ID found in code');
+          console.log('📝 Embed code sample:', embedCode.substring(0, 200) + '...');
+          showToast('Could not find WebinarFuel embed ID in the code ❌');
+          return;
+        }
+
+        console.log('✅ Step 1 Complete: Extracted embed ID:', embedId);
+        
+        // 2. Set the embed ID
+        console.log('🔧 Step 2: Setting embed ID in form field...');
+        const embedIdField = document.getElementById('wfEmbedId');
+        if (embedIdField) {
+          embedIdField.value = embedId;
+          console.log('✅ Step 2 Complete: Embed ID set in form');
+        } else {
+          console.error('❌ Step 2 Failed: wfEmbedId field not found');
+        }
+        
+        // 3. Create a hidden iframe to render the WebinarFuel widget and analyze it
+        const iframe = document.createElement('iframe');
+        iframe.style.cssText = 'position:absolute;left:-9999px;top:-9999px;width:800px;height:600px;border:none;';
+        iframe.srcdoc = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          </head>
+          <body>
+            ${embedCode}
+            
+            <script>
+              console.log('🔬 iframe: WebinarFuel analysis script loaded');
+              
+              // Wait for WebinarFuel to load and analyze the DOM
+              let checkCount = 0;
+              const maxChecks = 100;
+              
+              function analyzeWebinarFuel() {
+                checkCount++;
+                console.log(\`🔍 iframe: Analysis attempt \${checkCount}/\${maxChecks}\`);
+                
+                // Look for date dropdown (indicates date parsing needed)
+                const dateDropdown = document.querySelector('.wf_dropdown_value_container, .wf_datetime');
+                const hasDateParsing = !!dateDropdown;
+                
+                // Look for form fields to understand structure
+                const nameField = document.querySelector('input[name="name"]');
+                const emailField = document.querySelector('input[name="email"]');
+                const phoneField = document.querySelector('input[name="tel"]');
+                
+                console.log(\`📊 iframe: Current DOM state - Name: \${!!nameField}, Email: \${!!emailField}, Phone: \${!!phoneField}, DateDropdown: \${hasDateParsing}\`);
+                
+                if (nameField && emailField) {
+                  console.log('✅ iframe: Form structure detected successfully!');
+                  // Successfully detected form structure
+                  window.parent.postMessage({
+                    type: 'wf_analysis',
+                    data: {
+                      embedId: '${embedId}',
+                      hasDateParsing: hasDateParsing,
+                      hasNameField: !!nameField,
+                      hasEmailField: !!emailField,
+                      hasPhoneField: !!phoneField,
+                      success: true
+                    }
+                  }, '*');
+                } else if (checkCount < maxChecks) {
+                  // Keep checking
+                  setTimeout(analyzeWebinarFuel, 200);
+                } else {
+                  // Timeout
+                  window.parent.postMessage({
+                    type: 'wf_analysis',
+                    data: {
+                      embedId: '${embedId}',
+                      hasDateParsing: false,
+                      success: false,
+                      error: 'Timeout waiting for WebinarFuel to load'
+                    }
+                  }, '*');
+                }
+              }
+              
+              // Start analysis after a short delay
+              setTimeout(analyzeWebinarFuel, 1000);
+            </script>
+          </body>
+          </html>
+        `;
+        
+        // Listen for analysis results
+        console.log('👂 Step 3: Listening for iframe analysis results...');
+        const messageHandler = (event) => {
+          console.log('📨 Message received from iframe:', event.data);
+          
+          if (event.data.type === 'wf_analysis') {
+            console.log('🎯 Step 3: Analysis results received, cleaning up iframe...');
+            window.removeEventListener('message', messageHandler);
+            document.body.removeChild(iframe);
+            
+            const result = event.data.data;
+            console.log('📊 Analysis result details:', result);
+            
+            if (result.success) {
+              console.log('✅ WebinarFuel analysis complete:', result);
+              
+              // Update form configuration
+              document.getElementById('enableDateParsing').checked = result.hasDateParsing;
+              
+              // Show/hide date selector group
+              const dateSelectorGroup = document.getElementById('dateSelectorGroup');
+              if (dateSelectorGroup) {
+                dateSelectorGroup.style.display = result.hasDateParsing ? 'block' : 'none';
+              }
+              
+              showToast(\`🎉 Smart extraction complete! 
+📋 Embed ID: \${result.embedId}
+📅 Date parsing: \${result.hasDateParsing ? 'Enabled' : 'Not needed'}
+📝 Form fields detected: Name, Email\${result.hasPhoneField ? ', Phone' : ''}\`, 'success');
+              
+              // Clear the paste field
+              document.getElementById('wfEmbedPaste').value = '';
+              
+              // Save the form with new configuration
+              if (window.saveCurrentForm) {
+                window.saveCurrentForm();
+              }
+              
+            } else {
+              console.error('❌ WebinarFuel analysis failed:', result.error);
+              showToast(\`Analysis failed: \${result.error || 'Unknown error'} ⚠️\`);
+            }
+          }
+        };
+        
+        window.addEventListener('message', messageHandler);
+        document.body.appendChild(iframe);
+        
+        // Safety timeout
+        setTimeout(() => {
+          if (document.body.contains(iframe)) {
+            window.removeEventListener('message', messageHandler);
+            document.body.removeChild(iframe);
+            showToast('Analysis timeout - please check the embed code ⏰');
+          }
+        }, 15000);
+        
+      } catch (error) {
+        console.error('Smart extract error:', error);
+        showToast('Smart extraction failed. Please check the embed code format ❌');
+      }
+    };
+
     // Code Generation
     window.generateCode = async function() {
       if (!app.currentForm) return;
@@ -1014,28 +1318,51 @@
         return;
       }
 
-      // Check WebinarFuel fields
-      const sessionId = (app.currentForm.wf_session_id || '').trim();
-      const widgetId = (app.currentForm.wf_widget_id || '').trim();
-      const widgetVersion = (app.currentForm.wf_widget_version || '').trim();
-      
-      console.log('🔍 Debug - Form validation:', {
-        formName: app.currentForm.name,
-        isReplay: app.currentForm.is_replay,
-        sessionId: sessionId || '(empty)',
-        widgetId: widgetId || '(empty)', 
-        widgetVersion: widgetVersion || '(empty)',
-        bearerToken: bearerToken ? 'SET' : 'MISSING'
-      });
-      
-      if (!sessionId || !widgetId || !widgetVersion) {
-        console.log('❌ WebinarFuel validation failed - missing required fields');
-        showToast('Please fill in all WebinarFuel fields ❌');
-        return;
-      }
+      let code;
 
-      console.log('✅ Validation passed - generating code');
-      const code = generateEmbedCode(app.currentForm, bearerToken);
+      if (app.currentForm.form_type === 'automated_webinar') {
+        // Automated webinar validation
+        const embedId = (app.currentForm.wf_embed_id || '').trim();
+        
+        console.log('🔍 Debug - Automated webinar validation:', {
+          formName: app.currentForm.name,
+          embedId: embedId || '(empty)',
+          enableDateParsing: app.currentForm.enable_date_parsing,
+          bearerToken: bearerToken ? 'SET' : 'MISSING'
+        });
+        
+        if (!embedId) {
+          console.log('❌ Automated webinar validation failed - missing embed ID');
+          showToast('Please fill in WebinarFuel Embed ID ❌');
+          return;
+        }
+
+        console.log('✅ Automated webinar validation passed - generating bridge script');
+        code = generateAutomatedWebinarBridge(app.currentForm, bearerToken);
+      } else {
+        // Standard form validation
+        const sessionId = (app.currentForm.wf_session_id || '').trim();
+        const widgetId = (app.currentForm.wf_widget_id || '').trim();
+        const widgetVersion = (app.currentForm.wf_widget_version || '').trim();
+        
+        console.log('🔍 Debug - Standard form validation:', {
+          formName: app.currentForm.name,
+          isReplay: app.currentForm.is_replay,
+          sessionId: sessionId || '(empty)',
+          widgetId: widgetId || '(empty)', 
+          widgetVersion: widgetVersion || '(empty)',
+          bearerToken: bearerToken ? 'SET' : 'MISSING'
+        });
+        
+        if (!sessionId || !widgetId || !widgetVersion) {
+          console.log('❌ Standard form validation failed - missing required fields');
+          showToast('Please fill in all WebinarFuel fields ❌');
+          return;
+        }
+
+        console.log('✅ Standard form validation passed - generating registration form');
+        code = generateEmbedCode(app.currentForm, bearerToken);
+      }
       document.getElementById('codePreview').textContent = code;
       document.getElementById('codeModal').classList.add('active');
     };
@@ -1692,6 +2019,394 @@
 <` + `/script>
 </body>
 </html>`;
+    }
+
+    function generateAutomatedWebinarBridge(form, bearerToken) {
+      const embedId = form.wf_embed_id;
+      const dateSelectorId = form.wf_date_selector_id || embedId;
+      const enableDateParsing = form.enable_date_parsing;
+      const infFormId = 'inf_form_' + form.infusionsoft_xid;
+      
+      // Build the date parsing section if enabled
+      const dateParsing = enableDateParsing ? `
+  // --- Date Parsing ---
+  function parseWebinarFuelDate(rawText) {
+    console.log("📅 Parsing WebinarFuel date:", rawText);
+    const match = rawText.match(/^[A-Za-z]+,\\s([A-Za-z]+)\\s(\\d+)[a-z]{2}\\s(\\d{4})\\s@\\s(\\d{1,2}:\\d{2}\\s[APM]{2})/);
+    if (!match) {
+      console.error("❌ Date parsing failed - no regex match for:", rawText);
+      return null;
+    }
+    const [_, month, day, year, time] = match;
+    console.log("🔍 Date components:", { month, day, year, time });
+    const parsed = dayjs(\`\${month} \${day}, \${year} \${time}\`, "MMMM D, YYYY h:mm A");
+    console.log("📅 Parsed date object:", parsed.isValid() ? parsed.format() : "INVALID");
+    return parsed;
+  }
+
+  function renderCustomDate(dateObj) {
+    const day = dateObj.date();
+    const suffix = (d => (d > 3 && d < 21) ? 'th' : ['th','st','nd','rd'][d % 10] || 'th')(day);
+    const longDate = \`\${dateObj.format('dddd')}, \${dateObj.format('MMMM')} \${day}\${suffix}\`;
+    const shortDate = \`\${dateObj.format('MMMM')} \${day}\${suffix}\`;
+
+    document.querySelectorAll('.long-date-1, .heading-pS5bE8I2eLm').forEach(el => {
+      el.innerHTML = \`<div><h1><strong>\${longDate}</strong></h1></div>\`;
+    });
+    document.querySelectorAll('.heading-WNG06BB0FT').forEach(el => {
+      el.innerHTML = \`<div><h1><strong>\${shortDate}</strong></h1></div>\`;
+    });
+
+    console.log("✅ Webinar date rendered:", longDate);
+  }
+
+  function waitForDateRender(dateObj) {
+    console.log("👀 Watching for date render elements...");
+    const observer = new MutationObserver(() => {
+      const found = document.querySelector('.heading-WNG06BB0FT, .heading-pS5bE8I2eLm, .long-date-1');
+      if (found) {
+        console.log("📍 Date render element found:", found);
+        renderCustomDate(dateObj);
+        observer.disconnect();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  function startDateWatcher() {
+    console.log("👀 Starting date watcher for WebinarFuel dropdown...");
+    const observer = new MutationObserver(() => {
+      const el = document.querySelector('.wf_dropdown_value_container .wf_dropdown_value');
+      if (el && el.textContent.includes('@')) {
+        console.log("📍 WebinarFuel date dropdown found:", el.textContent.trim());
+        observer.disconnect();
+        const parsed = parseWebinarFuelDate(el.textContent.trim());
+        if (parsed?.isValid()) {
+          window.webinarDateFormatted = parsed.format('YYYY-MM-DD h:mm A');
+          console.log("✅ Date successfully parsed and stored:", window.webinarDateFormatted);
+          waitForDateRender(parsed);
+        } else {
+          console.error("❌ Invalid parsed date:", el.textContent.trim());
+        }
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  startDateWatcher();` : '';
+
+      const dateEmbedSection = enableDateParsing && dateSelectorId !== embedId ? `
+<!-- Hidden WebinarFuel Embed (for pulling date) -->
+<div style="position:absolute; left:-9999px; top:-9999px;">
+  <div class="wf_target wf_target_${dateSelectorId}"></div>
+  <script>
+    window._wf = window._wf || [];
+    _wf.push({ id: '${dateSelectorId}' });
+  </script>
+</div>` : '';
+
+      return `<!-- WebinarFuel to Infusionsoft Bridge -->
+<!-- Load dayjs for date parsing -->
+${enableDateParsing ? '<script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>' : ''}
+
+${dateEmbedSection}
+
+<!-- Hidden Infusionsoft Form -->
+<div style="display: none;">
+  <form accept-charset="UTF-8"
+        action="${form.infusionsoft_action}"
+        class="infusion-form"
+        id="${infFormId}"
+        method="POST">
+    
+    <input name="inf_form_xid" type="hidden" value="${form.infusionsoft_xid}" />
+    <input name="inf_form_name" type="hidden" value="${form.infusionsoft_form_name}" />
+    <input name="infusionsoft_version" type="hidden" value="1.70.0.794081" />
+
+    <input name="inf_field_FirstName" type="hidden" />
+    <input name="inf_field_LastName" type="hidden" />
+    <input name="inf_field_Email" type="hidden" />
+    <input name="inf_field_Phone1" type="hidden" />
+    ${enableDateParsing ? '<input name="inf_custom_WebinarDate" type="hidden" />' : ''}
+    <input name="wf_cid_field" type="hidden" />
+
+    <!-- UTM Tracking -->
+    <input name="inf_custom_GaSource" type="hidden" />
+    <input name="inf_custom_GaMedium" type="hidden" />
+    <input name="inf_custom_GaCampaign" type="hidden" />
+    <input name="inf_custom_GaTerm" type="hidden" />
+    <input name="inf_custom_GaContent" type="hidden" />
+    <input name="inf_custom_GaReferurl" type="hidden" />
+    <input name="inf_custom_GaCampaignID" type="hidden" />
+
+    <!-- SMS Consent Checkbox -->
+    <input id="${form.consent_id}" name="${form.consent_id}" type="checkbox" value="${form.consent_value}" />
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  console.log("🚀 WF→Infusionsoft bridge initialized");
+  console.log("🔧 Debug Mode: Bridge configuration loaded");
+  console.log("📋 Form Configuration:", {
+    embedId: '${embedId}',
+    dateSelectorId: '${dateSelectorId}',
+    enableDateParsing: ${enableDateParsing},
+    infFormId: '${infFormId}',
+    infusionsoftXid: '${form.infusionsoft_xid}',
+    infusionsoftAction: '${form.infusionsoft_action}'
+  });
+  ${dateParsing}
+
+  // --- SMS Consent Injection ---
+  function injectSmsConsentCheckbox() {
+    console.log("🔍 Looking for WebinarFuel form to inject SMS consent...");
+    
+    // Look for the WebinarFuel modal form
+    const wfModal = document.querySelector('.wf_modal_content, .wf-modal-content, [class*="modal"], [class*="popup"]');
+    if (!wfModal) {
+      console.log("⚠️ WebinarFuel modal not found yet");
+      return false;
+    }
+    
+    // Check if we already injected the checkbox
+    if (document.getElementById('wf-injected-sms-consent')) {
+      console.log("ℹ️ SMS consent checkbox already injected");
+      return true;
+    }
+    
+    // Find the submit button or form container to inject before
+    const submitButton = wfModal.querySelector('.wf_button_text, button[type="submit"], .submit-btn, [class*="submit"], [class*="button"]');
+    const phoneInput = wfModal.querySelector('input[type="tel"], input[name*="phone"]');
+    
+    if (!submitButton) {
+      console.log("⚠️ Submit button not found in WebinarFuel modal");
+      return false;
+    }
+    
+    console.log("✅ WebinarFuel modal and submit button found, injecting SMS consent...");
+    
+    // Create the SMS consent checkbox HTML
+    const smsConsentHtml = \`
+      <div id="wf-sms-consent-container" style="margin: 15px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background: #f9f9f9;">
+        <label style="display: flex; align-items: center; font-size: 14px; cursor: pointer;">
+          <input 
+            type="checkbox" 
+            id="wf-injected-sms-consent" 
+            name="sms-consent"
+            style="margin-right: 8px; width: 16px; height: 16px;"
+          />
+          <span>${form.consent_message || 'I consent to receive SMS messages about this webinar and future marketing communications. Message and data rates may apply. Reply STOP to opt-out.'}</span>
+        </label>
+      </div>
+    \`;
+    
+    // Insert the SMS consent checkbox before the submit button
+    submitButton.insertAdjacentHTML('beforebegin', smsConsentHtml);
+    
+    console.log("✅ SMS consent checkbox injected successfully");
+    return true;
+  }
+  
+  // Watch for WebinarFuel modal to appear and inject SMS consent
+  function watchForModalAndInject() {
+    console.log("👀 Watching for WebinarFuel modal to inject SMS consent...");
+    
+    const observer = new MutationObserver(() => {
+      if (injectSmsConsentCheckbox()) {
+        observer.disconnect();
+        console.log("🎯 SMS consent injection complete, stopping observer");
+      }
+    });
+    
+    observer.observe(document.body, { 
+      childList: true, 
+      subtree: true 
+    });
+    
+    // Also try immediate injection in case modal is already present
+    setTimeout(() => {
+      injectSmsConsentCheckbox();
+    }, 1000);
+  }
+
+  // --- GA / CID / Name Parsing ---
+  function populateGAFields(form) {
+    console.log("🔍 Populating GA tracking fields...");
+    const params = new URLSearchParams(window.location.search);
+    const ref = document.referrer || window.location.href;
+    const fields = {
+      'inf_custom_GaSource': params.get('utm_source') || 'null',
+      'inf_custom_GaMedium': params.get('utm_medium') || 'null',
+      'inf_custom_GaCampaign': params.get('utm_campaign') || 'null',
+      'inf_custom_GaTerm': params.get('utm_term') || 'null',
+      'inf_custom_GaContent': params.get('utm_content') || 'null',
+      'inf_custom_GaReferurl': ref,
+      'inf_custom_GaCampaignID': params.get('utm_id') || 'null'
+    };
+    console.log("📊 GA Field Values:", fields);
+    for (const [name, val] of Object.entries(fields)) {
+      const input = form.querySelector(\`input[name="\${name}"]\`);
+      if (input) {
+        input.value = val;
+        console.log(\`✅ Set \${name}: \${val}\`);
+      } else {
+        console.warn(\`⚠️ GA field not found: \${name}\`);
+      }
+    }
+  }
+
+  function parseName(full) {
+    const parts = full.trim().split(' ');
+    return {
+      firstName: parts.slice(0, -1).join(' ') || '',
+      lastName: parts.slice(-1).join(' ') || ''
+    };
+  }
+
+  function submitInfForm() {
+    console.log("📝 Starting Infusionsoft form submission...");
+    const form = document.getElementById('${infFormId}');
+    if (!form) {
+      console.error("❌ Infusionsoft form not found with ID: ${infFormId}");
+      return;
+    }
+    console.log("✅ Infusionsoft form found:", form);
+
+    console.log("🔍 Looking for WebinarFuel form inputs...");
+    const nameInput = document.querySelector('input[name="name"]');
+    const emailInput = document.querySelector('input[type="email"]');
+    const phoneInput = document.querySelector('input[type="tel"]');
+
+    console.log("📋 WebinarFuel Input Status:", {
+      nameInput: !!nameInput,
+      emailInput: !!emailInput,
+      phoneInput: !!phoneInput,
+      nameValue: nameInput?.value || 'N/A',
+      emailValue: emailInput?.value || 'N/A',
+      phoneValue: phoneInput?.value || 'N/A'
+    });
+
+    if (!nameInput || !emailInput) {
+      console.error("❌ Missing required inputs in WF modal", {
+        nameInput: !!nameInput,
+        emailInput: !!emailInput
+      });
+      return;
+    }
+
+    const fullName = nameInput.value || '';
+    const email = emailInput.value || '';
+    const phone = phoneInput?.value || '';
+    const cid = localStorage.getItem('_wf_cid') || '';
+    ${enableDateParsing ? 'const date = window.webinarDateFormatted || \'\';' : ''}
+
+    // Inject and capture SMS consent checkbox
+    console.log("� Setting up SMS consent checkbox injection...");
+    let smsConsent = false;
+    const injectedSmsCheckbox = document.getElementById('wf-injected-sms-consent');
+    
+    if (injectedSmsCheckbox) {
+      smsConsent = injectedSmsCheckbox.checked;
+      console.log("✅ SMS consent checkbox found:", {
+        element: injectedSmsCheckbox,
+        checked: smsConsent
+      });
+    } else {
+      console.log("⚠️ SMS consent checkbox not found - may not be injected yet");
+    }
+
+    console.log("📥 Raw form data extracted:", {
+      fullName,
+      email,
+      phone,
+      cid,
+      smsConsent${enableDateParsing ? ',\n      date' : ''}
+    });
+
+    const { firstName, lastName } = parseName(fullName);
+    console.log("👤 Parsed name:", { firstName, lastName });
+
+    const set = (name, value) => {
+      const input = form.querySelector(\`input[name="\${name}"]\`);
+      if (input) {
+        input.value = value;
+        console.log(\`✅ Set \${name}: \${value}\`);
+      } else {
+        console.warn(\`⚠️ Infusionsoft field not found: \${name}\`);
+      }
+    };
+
+    console.log("📤 Setting Infusionsoft form fields...");
+    set('inf_field_FirstName', firstName);
+    set('inf_field_LastName', lastName);
+    set('inf_field_Email', email);
+    set('inf_field_Phone1', phone);
+    ${enableDateParsing ? 'set(\'inf_custom_WebinarDate\', date);' : ''}
+    set('wf_cid_field', cid);
+    
+    // Handle SMS consent checkbox
+    console.log("📱 Setting SMS consent checkbox...");
+    const infSmsCheckbox = form.querySelector('input[id="${form.consent_id}"]');
+    if (infSmsCheckbox && smsConsent) {
+      infSmsCheckbox.checked = true;
+      console.log("✅ SMS consent checkbox checked in Infusionsoft form");
+    } else if (infSmsCheckbox && !smsConsent) {
+      infSmsCheckbox.checked = false;
+      console.log("ℹ️ SMS consent checkbox unchecked in Infusionsoft form");
+    } else {
+      console.warn("⚠️ SMS consent checkbox not found in Infusionsoft form");
+    }
+    
+    populateGAFields(form);
+
+    console.log("📨 Final submission data:", {
+      firstName, lastName, email, phone, cid, smsConsent${enableDateParsing ? ', date' : ''},
+      formAction: '${form.infusionsoft_action}',
+      formXid: '${form.infusionsoft_xid}'
+    });
+
+    try {
+      form.submit();
+      console.log("✅ Infusionsoft form submitted successfully");
+    } catch (error) {
+      console.error("❌ Error submitting Infusionsoft form:", error);
+    }
+  }
+
+  function attachSubmitListener() {
+    console.log("🔍 Looking for WebinarFuel submit button...");
+    const button = document.querySelector('.wf_button_text');
+    if (button) {
+      console.log("🔗 WF modal submit button found:", button);
+      button.addEventListener('click', () => {
+        console.log("🖱️ WF button clicked! Starting submission process...");
+        console.log("⏳ Waiting 600ms for WF form to process...");
+        setTimeout(submitInfForm, 600);
+      });
+    } else {
+      console.log("🕵️ WF submit button not found, retrying in 500ms...");
+      console.log("🔍 Available buttons:", document.querySelectorAll('button, .button, [role="button"]'));
+      setTimeout(attachSubmitListener, 500);
+    }
+  }
+
+  // Initialize bridge
+  console.log("🚀 Starting WebinarFuel to Infusionsoft bridge initialization...");
+  console.log("🔧 Environment check:", {
+    dayjs: typeof dayjs !== 'undefined',
+    localStorage: typeof localStorage !== 'undefined',
+    urlParams: new URLSearchParams(window.location.search).toString(),
+    referrer: document.referrer
+  });
+  
+  // Start watching for WebinarFuel modal to inject SMS consent
+  watchForModalAndInject();
+  
+  attachSubmitListener();
+  console.log("✅ Bridge initialization complete");
+});
+</script>`;
     }
 
     function closeCodeModal() {
