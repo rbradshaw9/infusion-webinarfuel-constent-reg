@@ -621,123 +621,110 @@
     function generateBridgeCode(form) {
       const formId = 'inf_form_' + form.infusionsoft_xid;
       
-      return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webinar Registration</title>
-</head>
-<body>
-
-<!-- WebinarFuel Embed -->
-${form.wf_embed_code}
-
-<!-- Hidden Infusionsoft Form -->
-<div style="display: none;">
-  <form accept-charset="UTF-8"
-        action="${form.infusionsoft_action}"
-        class="infusion-form"
-        id="${formId}"
-        method="POST">
-    
-    <input name="inf_form_xid" type="hidden" value="${form.infusionsoft_xid}" />
-    <input name="inf_form_name" type="hidden" value="WebinarBridge_${form.infusionsoft_xid}" />
-    <input name="infusionsoft_version" type="hidden" value="1.70.0.794081" />
-
-    <input name="inf_field_FirstName" type="hidden" />
-    <input name="inf_field_LastName" type="hidden" />
-    <input name="inf_field_Email" type="hidden" />
-    <input name="inf_field_Phone1" type="hidden" />
-
-    <!-- SMS Consent Checkbox -->
-    <input id="${form.consent_id}_bridge" name="${form.consent_id}" type="checkbox" value="${form.consent_value}" />
-  </form>
-</div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-  console.log("🚀 WebinarFuel to Infusionsoft bridge initialized");
-
-  // Watch for WebinarFuel registration form submission
-  function watchForRegistration() {
-    const observer = new MutationObserver(() => {
-      // Look for WebinarFuel registration form
-      const wfForm = document.querySelector('.wf_registration_form form, .wf-registration-form form, [class*="registration"] form');
-      
-      if (wfForm) {
-        console.log("📋 WebinarFuel registration form found");
-        
-        // Add event listener to form submission
-        wfForm.addEventListener('submit', function(e) {
-          console.log("📝 WebinarFuel form submitted, capturing data...");
-          
-          // Extract registration data
-          const firstName = wfForm.querySelector('input[name*="first"], input[name*="First"], input[placeholder*="First"]')?.value || '';
-          const lastName = wfForm.querySelector('input[name*="last"], input[name*="Last"], input[placeholder*="Last"]')?.value || '';
-          const email = wfForm.querySelector('input[type="email"], input[name*="email"], input[placeholder*="email"]')?.value || '';
-          const phone = wfForm.querySelector('input[type="tel"], input[name*="phone"], input[placeholder*="phone"]')?.value || '';
-          
-          console.log("📊 Captured data:", { firstName, lastName, email, phone });
-          
-          // Submit to Infusionsoft after a short delay
-          setTimeout(() => {
-            submitToInfusionsoft(firstName, lastName, email, phone);
-          }, 1000);
-        });
-        
-        observer.disconnect();
-      }
-    });
-    
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
-  function submitToInfusionsoft(firstName, lastName, email, phone) {
-    console.log("📤 Submitting to Infusionsoft...");
-    
-    const form = document.getElementById('${formId}');
-    if (!form) {
-      console.error("❌ Infusionsoft form not found");
-      return;
-    }
-
-    // Populate hidden form fields
-    const setField = (name, value) => {
-      const field = form.querySelector('[name="' + name + '"]');
-      if (field && value) {
-        field.value = value;
-        console.log("✅ Set " + name + ":", value);
-      }
-    };
-
-    setField('inf_field_FirstName', firstName);
-    setField('inf_field_LastName', lastName);
-    setField('inf_field_Email', email);
-    setField('inf_field_Phone1', phone);
-
-    // Set SMS consent to checked (user registered, so consent is implied)
-    const smsCheckbox = form.querySelector('input[id="${form.consent_id}_bridge"]');
-    if (smsCheckbox) {
-      smsCheckbox.checked = true;
-      console.log("✅ SMS consent checkbox checked");
-    }
-
-    try {
-      form.submit();
-      console.log("🎉 Successfully submitted to Infusionsoft!");
-    } catch (error) {
-      console.error("❌ Infusionsoft submission failed:", error);
-    }
-  }
-
-  // Start watching for registration
-  watchForRegistration();
-});
-</script>
-
-</body>
-</html>`;
+      return '<!DOCTYPE html>\n' +
+        '<html lang="en">\n' +
+        '<head>\n' +
+        '  <meta charset="UTF-8">\n' +
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
+        '  <title>Webinar Registration</title>\n' +
+        '</head>\n' +
+        '<body>\n\n' +
+        '<!-- WebinarFuel Embed -->\n' +
+        form.wf_embed_code + '\n\n' +
+        '<!-- Hidden Infusionsoft Form -->\n' +
+        '<div style="display: none;">\n' +
+        '  <form accept-charset="UTF-8"\n' +
+        '        action="' + form.infusionsoft_action + '"\n' +
+        '        class="infusion-form"\n' +
+        '        id="' + formId + '"\n' +
+        '        method="POST">\n' +
+        '    \n' +
+        '    <input name="inf_form_xid" type="hidden" value="' + form.infusionsoft_xid + '" />\n' +
+        '    <input name="inf_form_name" type="hidden" value="WebinarBridge_' + form.infusionsoft_xid + '" />\n' +
+        '    <input name="infusionsoft_version" type="hidden" value="1.70.0.794081" />\n\n' +
+        '    <input name="inf_field_FirstName" type="hidden" />\n' +
+        '    <input name="inf_field_LastName" type="hidden" />\n' +
+        '    <input name="inf_field_Email" type="hidden" />\n' +
+        '    <input name="inf_field_Phone1" type="hidden" />\n\n' +
+        '    <!-- SMS Consent Checkbox -->\n' +
+        '    <input id="' + form.consent_id + '_bridge" name="' + form.consent_id + '" type="checkbox" value="' + form.consent_value + '" />\n' +
+        '  </form>\n' +
+        '</div>\n\n' +
+        '<script>\n' +
+        'document.addEventListener(\'DOMContentLoaded\', function () {\n' +
+        '  console.log("🚀 WebinarFuel to Infusionsoft bridge initialized");\n\n' +
+        '  // Watch for WebinarFuel registration form submission\n' +
+        '  function watchForRegistration() {\n' +
+        '    const observer = new MutationObserver(() => {\n' +
+        '      // Look for WebinarFuel registration form\n' +
+        '      const wfForm = document.querySelector(\'.wf_registration_form form, .wf-registration-form form, [class*="registration"] form\');\n' +
+        '      \n' +
+        '      if (wfForm) {\n' +
+        '        console.log("📋 WebinarFuel registration form found");\n' +
+        '        \n' +
+        '        // Add event listener to form submission\n' +
+        '        wfForm.addEventListener(\'submit\', function(e) {\n' +
+        '          console.log("📝 WebinarFuel form submitted, capturing data...");\n' +
+        '          \n' +
+        '          // Extract registration data\n' +
+        '          const firstName = wfForm.querySelector(\'input[name*="first"], input[name*="First"], input[placeholder*="First"]\')?.value || \'\';\n' +
+        '          const lastName = wfForm.querySelector(\'input[name*="last"], input[name*="Last"], input[placeholder*="Last"]\')?.value || \'\';\n' +
+        '          const email = wfForm.querySelector(\'input[type="email"], input[name*="email"], input[placeholder*="email"]\')?.value || \'\';\n' +
+        '          const phone = wfForm.querySelector(\'input[type="tel"], input[name*="phone"], input[placeholder*="phone"]\')?.value || \'\';\n' +
+        '          \n' +
+        '          console.log("📊 Captured data:", { firstName, lastName, email, phone });\n' +
+        '          \n' +
+        '          // Submit to Infusionsoft after a short delay\n' +
+        '          setTimeout(() => {\n' +
+        '            submitToInfusionsoft(firstName, lastName, email, phone);\n' +
+        '          }, 1000);\n' +
+        '        });\n' +
+        '        \n' +
+        '        observer.disconnect();\n' +
+        '      }\n' +
+        '    });\n' +
+        '    \n' +
+        '    observer.observe(document.body, { childList: true, subtree: true });\n' +
+        '  }\n\n' +
+        '  function submitToInfusionsoft(firstName, lastName, email, phone) {\n' +
+        '    console.log("📤 Submitting to Infusionsoft...");\n' +
+        '    \n' +
+        '    const form = document.getElementById(\'' + formId + '\');\n' +
+        '    if (!form) {\n' +
+        '      console.error("❌ Infusionsoft form not found");\n' +
+        '      return;\n' +
+        '    }\n\n' +
+        '    // Populate hidden form fields\n' +
+        '    const setField = (name, value) => {\n' +
+        '      const field = form.querySelector(\'[name="\' + name + \'"]\');\n' +
+        '      if (field && value) {\n' +
+        '        field.value = value;\n' +
+        '        console.log("✅ Set " + name + ":", value);\n' +
+        '      }\n' +
+        '    };\n\n' +
+        '    setField(\'inf_field_FirstName\', firstName);\n' +
+        '    setField(\'inf_field_LastName\', lastName);\n' +
+        '    setField(\'inf_field_Email\', email);\n' +
+        '    setField(\'inf_field_Phone1\', phone);\n\n' +
+        '    // Set SMS consent to checked (user registered, so consent is implied)\n' +
+        '    const smsCheckbox = form.querySelector(\'input[id="' + form.consent_id + '_bridge"]\');\n' +
+        '    if (smsCheckbox) {\n' +
+        '      smsCheckbox.checked = true;\n' +
+        '      console.log("✅ SMS consent checkbox checked");\n' +
+        '    }\n\n' +
+        '    try {\n' +
+        '      form.submit();\n' +
+        '      console.log("🎉 Successfully submitted to Infusionsoft!");\n' +
+        '    } catch (error) {\n' +
+        '      console.error("❌ Infusionsoft submission failed:", error);\n' +
+        '    }\n' +
+        '  }\n\n' +
+        '  // Start watching for registration\n' +
+        '  watchForRegistration();\n' +
+        '});\n' +
+    '<\\/script>\n\n' +
+        '</body>\n' +
+        '</html>';
     }
 
     async function deleteForm() {
