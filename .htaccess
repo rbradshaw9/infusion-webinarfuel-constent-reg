@@ -1,0 +1,7 @@
+RewriteEngine On
+
+# Handle API routes
+RewriteRule ^api\.php/(.*)$ api.php [QSA,L,E=PATH_INFO:/$1]
+
+# Default index.html for the app
+DirectoryIndex index.html

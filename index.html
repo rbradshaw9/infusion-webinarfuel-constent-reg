@@ -476,8 +476,8 @@
     };
 
     // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-      loadForms();
+    document.addEventListener('DOMContentLoaded', async function() {
+      await loadForms();
       checkAuth();
       setupEventListeners();
     });
@@ -551,8 +551,8 @@
     }
 
     // Settings
-    function openSettings() {
-      document.getElementById('globalBearerToken').value = getBearerToken();
+    async function openSettings() {
+      document.getElementById('globalBearerToken').value = await getBearerToken();
       document.getElementById('settingsModal').classList.add('active');
     }
 
@@ -571,41 +571,85 @@
       }
     }
 
-    function saveBearerToken() {
+    async function saveBearerToken() {
       const token = document.getElementById('globalBearerToken').value.trim();
       if (token) {
-        setBearerToken(token);
+        await setBearerToken(token);
         showToast('Bearer token saved! 🎉', 'success');
         if (app.currentForm) {
-          renderFormEditor(); // Refresh to show updated status
+          await renderFormEditor(); // Refresh to show updated status
         }
       } else {
         showToast('Please enter a bearer token ❌');
       }
     }
 
-    function getBearerToken() {
-      return localStorage.getItem(app.STORAGE_KEYS.BEARER_TOKEN) || '';
+    async function getBearerToken() {
+      try {
+        const response = await fetch('./api.php/settings');
+        const settings = await response.json();
+        return settings.bearerToken || '';
+      } catch (error) {
+        console.error('Error loading bearer token:', error);
+        // Fallback to localStorage for backward compatibility
+        return localStorage.getItem(app.STORAGE_KEYS.BEARER_TOKEN) || '';
+      }
     }
 
-    function setBearerToken(token) {
-      localStorage.setItem(app.STORAGE_KEYS.BEARER_TOKEN, token);
+    async function setBearerToken(token) {
+      try {
+        const response = await fetch('./api.php/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ bearerToken: token })
+        });
+        if (response.ok) {
+          // Also save to localStorage as backup
+          localStorage.setItem(app.STORAGE_KEYS.BEARER_TOKEN, token);
+        }
+      } catch (error) {
+        console.error('Error saving bearer token:', error);
+        // Fallback to localStorage
+        localStorage.setItem(app.STORAGE_KEYS.BEARER_TOKEN, token);
+      }
     }
 
     // Make openSettings available globally for the link
     window.openSettings = openSettings;
 
-    // Forms Management
-    function loadForms() {
-      const stored = localStorage.getItem(app.STORAGE_KEYS.FORMS);
-      app.forms = stored ? JSON.parse(stored) : [];
+    // Forms Management (now uses file-based API)
+    async function loadForms() {
+      try {
+        const response = await fetch('./api.php/forms');
+        const formsData = await response.json();
+        app.forms = Array.isArray(formsData) ? formsData : Object.values(formsData || {});
+      } catch (error) {
+        console.error('Error loading forms:', error);
+        // Fallback to localStorage
+        const stored = localStorage.getItem(app.STORAGE_KEYS.FORMS);
+        app.forms = stored ? JSON.parse(stored) : [];
+      }
     }
 
-    function saveForms() {
-      localStorage.setItem(app.STORAGE_KEYS.FORMS, JSON.stringify(app.forms));
+    async function saveForms() {
+      try {
+        const response = await fetch('./api.php/forms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(app.forms)
+        });
+        if (response.ok) {
+          // Also save to localStorage as backup
+          localStorage.setItem(app.STORAGE_KEYS.FORMS, JSON.stringify(app.forms));
+        }
+      } catch (error) {
+        console.error('Error saving forms:', error);
+        // Fallback to localStorage
+        localStorage.setItem(app.STORAGE_KEYS.FORMS, JSON.stringify(app.forms));
+      }
     }
 
-    function createNewForm() {
+    async function createNewForm() {
       const name = prompt('Enter form name:');
       if (!name) return;
 
@@ -627,16 +671,16 @@
       };
 
       app.forms.unshift(newForm);
-      saveForms();
+      await saveForms();
       renderFormsList();
       loadForm(newForm.id);
       showToast('Form created! ✨', 'success');
     }
 
-    function loadForm(formId) {
+    async function loadForm(formId) {
       app.currentForm = app.forms.find(f => f.id === formId);
       localStorage.setItem(app.STORAGE_KEYS.ACTIVE_FORM, formId);
-      renderFormEditor();
+      await renderFormEditor();
       renderFormsList();
     }
 
@@ -657,9 +701,9 @@
       `).join('');
     }
 
-    function renderFormEditor() {
+    async function renderFormEditor() {
       const container = document.getElementById('editorContent');
-      const hasBearerToken = !!getBearerToken();
+      const hasBearerToken = !!(await getBearerToken());
       
       container.innerHTML = `
         <h2>✏️ Edit Form: ${escapeHtml(app.currentForm.name)}</h2>
@@ -798,7 +842,7 @@
     }
 
     // Save/Delete
-    window.saveCurrentForm = function() {
+    window.saveCurrentForm = async function() {
       if (!app.currentForm) return;
 
       app.currentForm.name = document.getElementById('formName').value;
@@ -814,24 +858,24 @@
       app.currentForm.button_text = document.getElementById('buttonText').value;
       app.currentForm.is_replay = document.getElementById('isReplay').checked;
 
-      saveForms();
+      await saveForms();
       renderFormsList();
       showToast('Form saved! 💾', 'success');
     };
 
-    window.deleteCurrentForm = function() {
+    window.deleteCurrentForm = async function() {
       if (!app.currentForm) return;
       
       if (!confirm(`Delete "${app.currentForm.name}"? This cannot be undone.`)) return;
 
       app.forms = app.forms.filter(f => f.id !== app.currentForm.id);
-      saveForms();
+      await saveForms();
       app.currentForm = null;
       localStorage.removeItem(app.STORAGE_KEYS.ACTIVE_FORM);
       renderFormsList();
       
       if (app.forms.length > 0) {
-        loadForm(app.forms[0].id);
+        await loadForm(app.forms[0].id);
       } else {
         showEmptyEditor();
       }
@@ -889,7 +933,7 @@
       }
     };
 
-    window.extractWebinarFuel = function() {
+    window.extractWebinarFuel = async function() {
       const url = document.getElementById('webinarFuelUrl').value;
       if (!url) {
         showToast('Please enter a WebinarFuel URL first ❌');
@@ -934,8 +978,9 @@
         if (versionId) document.getElementById('wfWidgetVersion').value = versionId;
         
         // Save bearer token if found
-        if (bearerToken && bearerToken !== getBearerToken()) {
-          setBearerToken(bearerToken);
+        const currentToken = await getBearerToken();
+        if (bearerToken && bearerToken !== currentToken) {
+          await setBearerToken(bearerToken);
           showToast('Bearer token also saved to Settings! 🔐', 'success');
         }
 
@@ -955,22 +1000,41 @@
     };
 
     // Code Generation
-    window.generateCode = function() {
+    window.generateCode = async function() {
       if (!app.currentForm) return;
 
-      const bearerToken = getBearerToken();
+      // Save current form data first to ensure fields are up to date
+      await window.saveCurrentForm();
+
+      const bearerToken = await getBearerToken();
 
       if (!bearerToken) {
         showToast('Please set Bearer Token in Settings first ⚠️');
-        openSettings();
+        await openSettings();
         return;
       }
 
-      if (!app.currentForm.wf_session_id || !app.currentForm.wf_widget_id || !app.currentForm.wf_widget_version) {
+      // Check WebinarFuel fields
+      const sessionId = (app.currentForm.wf_session_id || '').trim();
+      const widgetId = (app.currentForm.wf_widget_id || '').trim();
+      const widgetVersion = (app.currentForm.wf_widget_version || '').trim();
+      
+      console.log('🔍 Debug - Form validation:', {
+        formName: app.currentForm.name,
+        isReplay: app.currentForm.is_replay,
+        sessionId: sessionId || '(empty)',
+        widgetId: widgetId || '(empty)', 
+        widgetVersion: widgetVersion || '(empty)',
+        bearerToken: bearerToken ? 'SET' : 'MISSING'
+      });
+      
+      if (!sessionId || !widgetId || !widgetVersion) {
+        console.log('❌ WebinarFuel validation failed - missing required fields');
         showToast('Please fill in all WebinarFuel fields ❌');
         return;
       }
 
+      console.log('✅ Validation passed - generating code');
       const code = generateEmbedCode(app.currentForm, bearerToken);
       document.getElementById('codePreview').textContent = code;
       document.getElementById('codeModal').classList.add('active');
