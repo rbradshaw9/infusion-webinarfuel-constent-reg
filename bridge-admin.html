@@ -1631,12 +1631,12 @@
     <button id="inf_submit_btn" type="submit">${form.button_text}</button>
   </div>
 </form>
-<` + `script src="https://yv932.infusionsoft.app/app/webTracking/getTrackingCode"><` + `/script>
-<` + `script src="https://yv932.infusionsoft.com/app/timezone/timezoneInputJs?xid=${form.infusionsoft_xid}"><` + `/script>
-<` + `script src="https://yv932.infusionsoft.com/js/jquery/jquery-3.3.1.js"><` + `/script>
-<` + `script src="https://yv932.infusionsoft.app/app/webform/overwriteRefererJs"><` + `/script>
-<` + `script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"><` + `/script>
-<` + `script>
+<script src="https://yv932.infusionsoft.app/app/webTracking/getTrackingCode"></script>
+<script src="https://yv932.infusionsoft.com/app/timezone/timezoneInputJs?xid=${form.infusionsoft_xid}"></script>
+<script src="https://yv932.infusionsoft.com/js/jquery/jquery-3.3.1.js"></script>
+<script src="https://yv932.infusionsoft.app/app/webform/overwriteRefererJs"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+<script>
 (function() {
   'use strict';
 
@@ -2021,7 +2021,7 @@
     initWFBridge('${formId}');
   }
 })();
-<` + `/script>
+</script>
 </body>
 </html>`;
     }
@@ -2119,13 +2119,13 @@ ${dateEmbedSection}
 <!-- Hidden Infusionsoft Form -->
 <div style="display: none;">
   <form accept-charset="UTF-8"
-        action="` + form.infusionsoft_action + `"
+        action="${form.infusionsoft_action}"
         class="infusion-form"
-        id="` + infFormId + `"
+        id="${infFormId}"
         method="POST">
     
-    <input name="inf_form_xid" type="hidden" value="` + form.infusionsoft_xid + `" />
-    <input name="inf_form_name" type="hidden" value="` + form.infusionsoft_form_name + `" />
+    <input name="inf_form_xid" type="hidden" value="${form.infusionsoft_xid}" />
+    <input name="inf_form_name" type="hidden" value="${form.infusionsoft_form_name}" />
     <input name="infusionsoft_version" type="hidden" value="1.70.0.794081" />
 
     <input name="inf_field_FirstName" type="hidden" />
@@ -2145,7 +2145,7 @@ ${dateEmbedSection}
     <input name="inf_custom_GaCampaignID" type="hidden" />
 
     <!-- SMS Consent Checkbox -->
-    <input id="` + form.consent_id + `" name="` + form.consent_id + `" type="checkbox" value="` + form.consent_value + `" />
+    <input id="${form.consent_id}" name="${form.consent_id}" type="checkbox" value="${form.consent_value}" />
   </form>
 </div>
 
@@ -2154,14 +2154,14 @@ document.addEventListener('DOMContentLoaded', function () {
   console.log("🚀 WF→Infusionsoft bridge initialized");
   console.log("🔧 Debug Mode: Bridge configuration loaded");
   console.log("📋 Form Configuration:", {
-    embedId: '` + embedId + `',
-    dateSelectorId: '` + dateSelectorId + `',
-    enableDateParsing: ` + enableDateParsing + `,
-    infFormId: '` + infFormId + `',
-    infusionsoftXid: '` + form.infusionsoft_xid + `',
-    infusionsoftAction: '` + form.infusionsoft_action + `'
+    embedId: '${embedId}',
+    dateSelectorId: '${dateSelectorId}',
+    enableDateParsing: ${enableDateParsing},
+    infFormId: '${infFormId}',
+    infusionsoftXid: '${form.infusionsoft_xid}',
+    infusionsoftAction: '${form.infusionsoft_action}'
   });
-  ` + dateParsing + `
+  ${dateParsing}
 
   // --- SMS Consent Injection ---
   function injectSmsConsentCheckbox() {
@@ -2201,7 +2201,7 @@ document.addEventListener('DOMContentLoaded', function () {
             name="sms-consent"
             style="margin-right: 8px; width: 16px; height: 16px;"
           />
-          <span>` + (form.consent_message || 'I consent to receive SMS messages about this webinar and future marketing communications. Message and data rates may apply. Reply STOP to opt-out.') + `</span>
+          <span>\${form.consent_message || 'I consent to receive SMS messages about this webinar and future marketing communications. Message and data rates may apply. Reply STOP to opt-out.'}</span>
         </label>
       </div>
     \`;
@@ -2271,9 +2271,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function submitInfForm() {
     console.log("📝 Starting Infusionsoft form submission...");
-    const form = document.getElementById('` + infFormId + `');
+    const form = document.getElementById('${infFormId}');
     if (!form) {
-      console.error("❌ Infusionsoft form not found with ID: " + infFormId);
+      console.error("❌ Infusionsoft form not found with ID: ${infFormId}");
       return;
     }
     console.log("✅ Infusionsoft form found:", form);
@@ -2352,7 +2352,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Handle SMS consent checkbox
     console.log("📱 Setting SMS consent checkbox...");
-    const infSmsCheckbox = form.querySelector('input[id="` + form.consent_id + `"]');
+    const infSmsCheckbox = form.querySelector('input[id="${form.consent_id}"]');
     if (infSmsCheckbox && smsConsent) {
       infSmsCheckbox.checked = true;
       console.log("✅ SMS consent checkbox checked in Infusionsoft form");
@@ -2367,8 +2367,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     console.log("📨 Final submission data:", {
       firstName, lastName, email, phone, cid, smsConsent${enableDateParsing ? ', date' : ''},
-      formAction: '` + form.infusionsoft_action + `',
-      formXid: '` + form.infusionsoft_xid + `'
+      formAction: '${form.infusionsoft_action}',
+      formXid: '${form.infusionsoft_xid}'
     });
 
     try {
