@@ -1270,10 +1270,10 @@
                 dateSelectorGroup.style.display = result.hasDateParsing ? 'block' : 'none';
               }
               
-              showToast(\`🎉 Smart extraction complete! 
-📋 Embed ID: \${result.embedId}
-📅 Date parsing: \${result.hasDateParsing ? 'Enabled' : 'Not needed'}
-📝 Form fields detected: Name, Email\${result.hasPhoneField ? ', Phone' : ''}\`, 'success');
+              showToast(`🎉 Smart extraction complete! 
+📋 Embed ID: ${result.embedId}
+📅 Date parsing: ${result.hasDateParsing ? 'Enabled' : 'Not needed'}
+📝 Form fields detected: Name, Email${result.hasPhoneField ? ', Phone' : ''}`, 'success');
               
               // Clear the paste field
               document.getElementById('wfEmbedPaste').value = '';
@@ -2145,7 +2145,7 @@ ${dateEmbedSection}
     <input name="inf_custom_GaCampaignID" type="hidden" />
 
     <!-- SMS Consent Checkbox -->
-    <input id="${form.consent_id}" name="${form.consent_id}" type="checkbox" value="${form.consent_value}" />
+    <input id="${form.consent_id}_bridge" name="${form.consent_id}" type="checkbox" value="${form.consent_value}" />
   </form>
 </div>
 
@@ -2352,7 +2352,7 @@ document.addEventListener('DOMContentLoaded', function () {
     
     // Handle SMS consent checkbox
     console.log("📱 Setting SMS consent checkbox...");
-    const infSmsCheckbox = form.querySelector('input[id="${form.consent_id}"]');
+    const infSmsCheckbox = form.querySelector('input[id="${form.consent_id}_bridge"]');
     if (infSmsCheckbox && smsConsent) {
       infSmsCheckbox.checked = true;
       console.log("✅ SMS consent checkbox checked in Infusionsoft form");
