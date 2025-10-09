@@ -1,235 +1,116 @@
-# Webinar Bridge Admin System
+# Webinar Registration Form Generator
 
-A secure admin system for generating Infusionsoft + WebinarFuel integration forms with PostgreSQL database support and SEO protection. Designed for bridge.thecashflowacademy.com with default admin user ryan@thecashflowacademy.com.
+A simple, single-file admin tool to generate Infusionsoft + WebinarFuel dual-registration forms.
 
-## 🚀 Features
+## 🚀 Quick Start
 
-- **Dual Integration**: Seamless integration with both Infusionsoft and WebinarFuel
-- **Form Validation**: Automatic validation of Infusionsoft form HTML
-- **Smart Parsing**: Auto-extract WebinarFuel widget information from URLs  
-- **Responsive Design**: Mobile-optimized registration forms
-- **SMS Consent Management**: Intelligent handling of phone number submission based on consent
-- **UTM Tracking**: Automatic UTM parameter capture and forwarding
-- **User Management**: Secure authentication and user accounts
-- **One-Click Deployment**: Automated server setup and SSL configuration
+1. **Open `admin.html`** in your browser
+2. **Login** with password: `admin123`
+3. **Create a new form** and fill in your configuration
+4. **Generate the embed code** and copy it to your website
 
-## 📋 Requirements
+That's it! No installation, no servers, no complexity.
 
-- Ubuntu 20.04+ server
-- Root access
-- Domain name pointing to your server
-- WebinarFuel account with API access
-- Infusionsoft account
+## 📋 What It Does
 
-## 🛠 Installation
+This tool generates HTML registration forms that submit to **both**:
+- **Infusionsoft** (your CRM/form processor)
+- **WebinarFuel** (your webinar platform)
 
-### Option 1: One-Click Deployment (Recommended)
+The forms include:
+- ✅ UTM parameter tracking (automatically captured and stored)
+- ✅ SMS consent checkbox (optional phone number submission)
+- ✅ Floating label UI with modern design
+- ✅ E.164 phone normalization (+1 prefix)
+- ✅ Duplicate submission prevention
+- ✅ Error handling and validation
 
-```bash
-# On your server, clone this repository
-git clone https://github.com/yourusername/webinar-bridge.git
-cd webinar-bridge
+## 🔧 How to Use
 
-# Run the deployment script
-sudo bash deploy.sh bridge.yourdomain.com admin@yourdomain.com
-```
+### Quick Import Method (Recommended!)
 
-### Option 2: Manual Setup
+The easiest way to configure a form:
 
-1. **Install Dependencies**
-```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo bash -
-sudo apt-get install -y nodejs sqlite3 git
-```
+1. **Copy your Infusionsoft form HTML** from your Infusionsoft account
+2. **Paste it** into the "Paste Infusionsoft Form HTML" field
+3. **Click "🔍 Extract Infusionsoft Data"** - All fields auto-populate!
+4. **Paste your WebinarFuel widget URL** (from the embed script or widget settings)
+5. **Click "🔍 Extract WebinarFuel Data"** - Widget ID, version, and token extracted!
+6. **Enter the Session ID manually** (this changes per webinar session)
+7. **Save and generate!**
 
-2. **Setup Project**
-```bash
-sudo mkdir -p /var/www/webinar-bridge
-sudo cp -r . /var/www/webinar-bridge/
-cd /var/www/webinar-bridge
-```
+### Manual Method
 
-3. **Install Backend Dependencies**
-```bash
-cd backend
-npm install --production
-```
+If you prefer to enter values manually:
 
-4. **Install Frontend Dependencies & Build**
-```bash
-cd ../frontend
-npm install
-npm run build
-```
+### Step 1: Get Your Configuration Values
 
-5. **Initialize Database**
-```bash
-cd ..
-sqlite3 database/webinar-bridge.db < database/init.sql
-```
+You'll need these values from Infusionsoft and WebinarFuel:
 
-6. **Configure Apache** (see deploy.sh for full configuration)
+**From Infusionsoft:**
+- Form Action URL (e.g., `https://yv932.infusionsoft.com/app/form/process/...`)
+- Form XID (the unique identifier in the URL)
+- Form Name (internal name)
 
-## 📖 Usage
+**From WebinarFuel:**
+- Session ID (the webinar session)
+- Widget ID (the embed widget)
+- Widget Version (the version number)
+- Bearer Token (API authentication)
 
-### 1. Initial Setup
+### Step 2: Create and Configure
 
-1. Visit `https://bridge.yourdomain.com`
-2. Create your admin account
-3. Go to Settings and add your WebinarFuel Bearer Token
+1. Open `admin.html` in your browser
+2. Login with `admin123` (change this after first login!)
+3. Click "+ New" to create a form
+4. Fill in all the configuration fields
+5. Click "💾 Save Form"
 
-### 2. Creating a Registration Form
+### Step 3: Generate and Deploy
 
-1. Click "New Form" in the dashboard
-2. Enter a descriptive name for your form
-3. **Add WebinarFuel Configuration:**
-   - Paste your WebinarFuel widget URL (e.g., `https://app.webinarfuel.com/webinars/12345/widgets/67890/10001/elements`)
-   - Enter the Session ID from WebinarFuel
-   - Widget ID and Version will auto-populate from the URL
+1. Click "🚀 Generate Code"
+2. Copy the generated HTML or download it
+3. Paste it on your website or landing page
 
-4. **Add Infusionsoft Form HTML:**
-   - Copy the complete form HTML from your Infusionsoft form builder
-   - Paste it into the HTML field
+## 🔐 Security
 
-5. Click "Create Form"
+- **Change the password immediately** after first login (click "Change Password")
+- All data is stored in your browser's localStorage (private to you)
+- No server required means no attack surface
+- Share the generated forms only (not the admin.html file)
 
-### 3. Generating the Registration Form
+## 📝 Files
 
-1. Edit your saved form
-2. Click "Generate Form"  
-3. The system will validate your configuration and generate a complete HTML file
-4. Download or view the generated registration form
+- `admin.html` - The admin tool (keep this private!)
+- `registration-script.html` - Example of a generated form
 
-### 4. Using the Generated Form
+## 💡 Tips
 
-- Host the generated HTML file on your website
-- The form will automatically handle submissions to both platforms
-- Phone numbers are only sent to WebinarFuel if SMS consent is checked
-- All UTM parameters are automatically captured and forwarded
+- **Infusionsoft Form HTML**: Copy the entire `<form>...</form>` block from your Infusionsoft form builder
+- **WebinarFuel URL formats** that work:
+  - Embed script URL: `https://embed.webby.app/embed/viewers?widget_id=78139&version_id=129684&token=...`
+  - Widget page URL: `https://embed.webby.app/embed/viewers/78139/129684`
+  - Any URL with widget_id and version_id parameters
+- **Session ID** must be entered manually (it's unique per webinar session, not per widget)
+- **Test your forms** before going live
+- **Save multiple form configurations** for different webinars
+- **Export forms** by downloading the generated code
+- **Back up your data** by exporting forms (localStorage is browser-specific)
 
-## 🔧 Configuration
+## 🔄 Migration from Complex Setup
 
-### Environment Variables
+If you had the previous Node.js/React setup:
+- All forms from the old database can be manually recreated
+- The generated HTML is the same, just simpler to manage
+- No servers to maintain or deploy
 
-Create `/var/www/webinar-bridge/backend/.env`:
+## 📞 Support
 
-```bash
-NODE_ENV=production
-PORT=3001
-DB_PATH=/var/www/webinar-bridge/database/webinar-bridge.db
-JWT_SECRET=your-super-secret-jwt-key
-CORS_ORIGINS=https://bridge.yourdomain.com
-```
-
-### WebinarFuel Configuration
-
-You'll need:
-- **Bearer Token**: From WebinarFuel API settings
-- **Session ID**: From your webinar session
-- **Widget ID & Version**: From the widget URL
-
-### Infusionsoft Configuration
-
-Your Infusionsoft form must include:
-- Email field (`inf_field_Email`)
-- Form XID (`inf_form_xid`) 
-- Form name (`inf_form_name`)
-- Optional: First name, last name, phone fields
-- Optional: SMS consent checkbox
-
-## 🔒 Security Features
-
-- JWT-based authentication
-- Password hashing with bcrypt
-- SQL injection protection
-- XSS protection with Helmet.js
-- CORS configuration
-- SSL/TLS encryption
-
-## 🚀 Generated Form Features
-
-- **Responsive Design**: Works perfectly on mobile and desktop
-- **Floating Labels**: Modern, animated form labels
-- **Validation**: Client-side and server-side validation
-- **Loading States**: User-friendly feedback during submission
-- **Error Handling**: Graceful error handling and user feedback
-- **UTM Preservation**: Automatic UTM parameter handling
-- **Dual Submission**: Simultaneous submission to both platforms
-
-## 📊 API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-- `GET /api/auth/me` - Get current user
-- `PUT /api/auth/bearer-token` - Update WebinarFuel bearer token
-
-### Forms Management
-- `GET /api/forms` - List user's forms
-- `POST /api/forms` - Create new form
-- `GET /api/forms/:id` - Get specific form
-- `PUT /api/forms/:id` - Update form
-- `DELETE /api/forms/:id` - Delete form
-
-### Code Generation
-- `POST /api/generate/validate` - Validate Infusionsoft HTML
-- `POST /api/generate/form/:id` - Generate registration form
-- `GET /api/generate/form/:filename` - Download generated form
-
-## 🛡️ Backup & Maintenance
-
-The deployment script automatically sets up:
-- Daily database backups
-- Log rotation
-- Systemd service management
-
-**Manual backup:**
-```bash
-/var/www/webinar-bridge/backup.sh
-```
-
-**Service management:**
-```bash
-sudo systemctl status webinar-bridge
-sudo systemctl restart webinar-bridge
-sudo systemctl logs webinar-bridge
-```
-
-## 🐛 Troubleshooting
-
-### Common Issues
-
-1. **Form Generation Fails**
-   - Check if Bearer Token is configured
-   - Validate Infusionsoft HTML has required fields
-   - Verify WebinarFuel credentials
-
-2. **Service Won't Start**
-   ```bash
-   sudo journalctl -u webinar-bridge -f
-   ```
-
-3. **Database Issues**
-   ```bash
-   sqlite3 /var/www/webinar-bridge/database/webinar-bridge.db ".tables"
-   ```
-
-4. **Permission Issues**
-   ```bash
-   sudo chown -R www-data:www-data /var/www/webinar-bridge
-   ```
-
-## 📝 License
-
-MIT License - see LICENSE file for details.
-
-## 🤝 Support
-
-For issues and questions:
-1. Check the troubleshooting section
-2. Review server logs
-3. Create an issue on GitHub
+For issues with:
+- **Infusionsoft integration** - Check your form action URL and XID
+- **WebinarFuel integration** - Verify your session ID, widget ID, version, and bearer token
+- **UTM tracking** - Open browser console to see parameter capture logs
 
 ---
 
-**Built for The Cash Flow Academy** 🚀
+**That's it!** Simple, fast, and it just works. 🎉

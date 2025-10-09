@@ -1,5 +1,0 @@
-User-agent: *
-Disallow: /
-
-# Block all search engines from indexing this site
-# This is a private application for generating webinar registration forms

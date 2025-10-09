@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webinar Form Generator - Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+
+    .login-container h1 {
+      color: #1f2937;
+      margin-bottom: 10px;
+      font-size: 28px;
+    }
+
+    .login-container p {
+      color: #6b7280;
+      margin-bottom: 30px;
+    }
+
+    .admin-container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .header {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 16px;
+      margin-bottom: 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .header h1 {
+      color: #1f2937;
+      font-size: 24px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 350px 1fr;
+      gap: 30px;
+    }
+
+    .forms-list {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+    }
+
+    .forms-list h2 {
+      color: #1f2937;
+      font-size: 18px;
+      margin-bottom: 15px;
+    }
+
+    .form-item {
+      padding: 15px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .form-item:hover {
+      border-color: #667eea;
+      background: #f9fafb;
+    }
+
+    .form-item.active {
+      border-color: #667eea;
+      background: #eef2ff;
+    }
+
+    .form-item h3 {
+      color: #1f2937;
+      font-size: 16px;
+      margin-bottom: 5px;
+    }
+
+    .form-item p {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #9ca3af;
+    }
+
+    .form-editor {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+    }
+
+    .form-editor h2 {
+      color: #1f2937;
+      font-size: 20px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #374151;
+      font-weight: 500;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+      font-family: 'Courier New', monospace;
+    }
+
+    .form-group small {
+      display: block;
+      color: #6b7280;
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 2px solid #e5e7eb;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: #667eea;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #5568d3;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .btn-secondary:hover {
+      background: #d1d5db;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn-success {
+      background: #10b981;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #059669;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      padding: 20px;
+      overflow-y: auto;
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-header h2 {
+      color: #1f2937;
+      font-size: 22px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #6b7280;
+      cursor: pointer;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+    }
+
+    .close-btn:hover {
+      background: #f3f4f6;
+    }
+
+    .code-preview {
+      background: #1f2937;
+      color: #e5e7eb;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+      max-height: 500px;
+    }
+
+    .code-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      background: #1f2937;
+      color: white;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      z-index: 2000;
+      animation: slideIn 0.3s ease;
+    }
+
+    .toast.success {
+      background: #10b981;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .section-divider {
+      border-top: 2px solid #e5e7eb;
+      margin: 30px 0;
+      padding-top: 30px;
+    }
+
+    .section-title {
+      color: #667eea;
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 15px;
+    }
+
+    .info-box {
+      background: #f9fafb;
+      padding: 15px;
+      border-radius: 8px;
+      border: 2px solid #e5e7eb;
+      margin-bottom: 20px;
+    }
+
+    .info-box .status {
+      color: #6b7280;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Screen -->
+  <div id="loginScreen" class="login-container">
+    <h1>🚀 Admin Login</h1>
+    <p>Enter password to access the form generator</p>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="loginPassword" placeholder="Enter admin password">
+      <small>Default password: <strong>admin123</strong></small>
+    </div>
+    <button class="btn-primary" style="width: 100%; margin-top: 10px;" id="loginBtn">Login</button>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="adminDashboard" class="admin-container hidden">
+    <div class="header">
+      <h1>📝 Webinar Form Generator</h1>
+      <div class="header-actions">
+        <button class="btn-secondary btn-small" id="settingsBtn">⚙️ Settings</button>
+        <button class="btn-secondary btn-small" id="logoutBtn">Logout</button>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Forms List -->
+      <div class="forms-list">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+          <h2>📋 Saved Forms</h2>
+          <button class="btn-primary btn-small" id="newFormBtn">+ New</button>
+        </div>
+        <div id="formsList"></div>
+      </div>
+
+      <!-- Form Editor -->
+      <div class="form-editor">
+        <div id="editorContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Code Preview Modal -->
+  <div id="codeModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>📋 Generated Embed Code</h2>
+        <button class="close-btn" id="closeCodeBtn">×</button>
+      </div>
+      <div class="code-preview" id="codePreview"></div>
+      <div class="code-actions">
+        <button class="btn-success" id="copyCodeBtn">📋 Copy to Clipboard</button>
+        <button class="btn-secondary" id="downloadCodeBtn">⬇️ Download HTML</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settingsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⚙️ Settings</h2>
+        <button class="close-btn" id="closeSettingsBtn">×</button>
+      </div>
+      
+      <div class="form-group">
+        <label>Admin Password</label>
+        <input type="password" id="newPassword" placeholder="Enter new password">
+        <button class="btn-primary btn-small" id="updatePasswordBtn" style="margin-top: 8px;">Update Password</button>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <div class="form-group">
+        <label>WebinarFuel API Bearer Token (Global)</label>
+        <input type="text" id="globalBearerToken" placeholder="Dp2kG9Vucpyq5t5RVPqvDxfU" value="">
+        <small>Set this once and it will be used for all forms automatically</small>
+        <button class="btn-primary btn-small" id="saveBearerBtn" style="margin-top: 8px;">Save Bearer Token</button>
+      </div>
+
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+        <button class="btn-secondary" id="closeSettings2Btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+  <script>
+    // App State
+    const app = {
+      currentForm: null,
+      forms: [],
+      DEFAULT_PASSWORD: 'admin123',
+      STORAGE_KEYS: {
+        PASSWORD: 'wf_admin_password',
+        FORMS: 'wf_forms',
+        LOGGED_IN: 'wf_logged_in',
+        ACTIVE_FORM: 'wf_active_form',
+        BEARER_TOKEN: 'wf_bearer_token'
+      }
+    };
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadForms();
+      checkAuth();
+      setupEventListeners();
+    });
+
+    function setupEventListeners() {
+      document.getElementById('loginBtn').addEventListener('click', login);
+      document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') login();
+      });
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+      document.getElementById('settingsBtn').addEventListener('click', openSettings);
+      document.getElementById('newFormBtn').addEventListener('click', createNewForm);
+      document.getElementById('closeCodeBtn').addEventListener('click', closeCodeModal);
+      document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
+      document.getElementById('closeSettings2Btn').addEventListener('click', closeSettings);
+      document.getElementById('copyCodeBtn').addEventListener('click', copyCode);
+      document.getElementById('downloadCodeBtn').addEventListener('click', downloadCode);
+      document.getElementById('updatePasswordBtn').addEventListener('click', updatePassword);
+      document.getElementById('saveBearerBtn').addEventListener('click', saveBearerToken);
+    }
+
+    // Authentication
+    function checkAuth() {
+      const isLoggedIn = sessionStorage.getItem(app.STORAGE_KEYS.LOGGED_IN);
+      if (isLoggedIn === 'true') {
+        showDashboard();
+      } else {
+        showLogin();
+      }
+    }
+
+    function login() {
+      const password = document.getElementById('loginPassword').value;
+      const storedPassword = localStorage.getItem(app.STORAGE_KEYS.PASSWORD) || app.DEFAULT_PASSWORD;
+      
+      if (password === storedPassword) {
+        sessionStorage.setItem(app.STORAGE_KEYS.LOGGED_IN, 'true');
+        showDashboard();
+        showToast('Welcome back! 👋', 'success');
+      } else {
+        showToast('Incorrect password ❌');
+        document.getElementById('loginPassword').value = '';
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem(app.STORAGE_KEYS.LOGGED_IN);
+      showLogin();
+      showToast('Logged out successfully');
+    }
+
+    function showLogin() {
+      document.getElementById('loginScreen').classList.remove('hidden');
+      document.getElementById('adminDashboard').classList.add('hidden');
+      document.getElementById('loginPassword').value = '';
+    }
+
+    function showDashboard() {
+      document.getElementById('loginScreen').classList.add('hidden');
+      document.getElementById('adminDashboard').classList.remove('hidden');
+      renderFormsList();
+      
+      const activeFormId = localStorage.getItem(app.STORAGE_KEYS.ACTIVE_FORM);
+      if (activeFormId && app.forms.find(f => f.id === activeFormId)) {
+        loadForm(activeFormId);
+      } else if (app.forms.length > 0) {
+        loadForm(app.forms[0].id);
+      } else {
+        showEmptyEditor();
+      }
+    }
+
+    // Settings
+    function openSettings() {
+      document.getElementById('globalBearerToken').value = getBearerToken();
+      document.getElementById('settingsModal').classList.add('active');
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('active');
+    }
+
+    function updatePassword() {
+      const newPassword = document.getElementById('newPassword').value;
+      if (newPassword && newPassword.length >= 4) {
+        localStorage.setItem(app.STORAGE_KEYS.PASSWORD, newPassword);
+        document.getElementById('newPassword').value = '';
+        showToast('Password updated! 🔐', 'success');
+      } else if (newPassword !== '') {
+        showToast('Password must be at least 4 characters ❌');
+      }
+    }
+
+    function saveBearerToken() {
+      const token = document.getElementById('globalBearerToken').value.trim();
+      if (token) {
+        setBearerToken(token);
+        showToast('Bearer token saved! 🎉', 'success');
+        if (app.currentForm) {
+          renderFormEditor(); // Refresh to show updated status
+        }
+      } else {
+        showToast('Please enter a bearer token ❌');
+      }
+    }
+
+    function getBearerToken() {
+      return localStorage.getItem(app.STORAGE_KEYS.BEARER_TOKEN) || '';
+    }
+
+    function setBearerToken(token) {
+      localStorage.setItem(app.STORAGE_KEYS.BEARER_TOKEN, token);
+    }
+
+    // Make openSettings available globally for the link
+    window.openSettings = openSettings;
+
+    // Forms Management
+    function loadForms() {
+      const stored = localStorage.getItem(app.STORAGE_KEYS.FORMS);
+      app.forms = stored ? JSON.parse(stored) : [];
+    }
+
+    function saveForms() {
+      localStorage.setItem(app.STORAGE_KEYS.FORMS, JSON.stringify(app.forms));
+    }
+
+    function createNewForm() {
+      const name = prompt('Enter form name:');
+      if (!name) return;
+
+      const newForm = {
+        id: Date.now().toString(),
+        name: name,
+        infusionsoft_action: '',
+        infusionsoft_xid: '',
+        infusionsoft_form_name: '',
+        wf_session_id: '',
+        wf_widget_id: '',
+        wf_widget_version: '',
+        consent_id: 'inf_option_SMSConsent',
+        consent_value: '3872',
+        consent_message: 'By checking this box, I agree to receive text messages (such as reminders, updates, and promotional offers) from The Cash Flow Academy at the mobile number provided. Message and data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply STOP to unsubscribe.',
+        button_text: '🔥 Reserve My Free Seat Now',
+        is_replay: false,
+        created: new Date().toISOString()
+      };
+
+      app.forms.unshift(newForm);
+      saveForms();
+      renderFormsList();
+      loadForm(newForm.id);
+      showToast('Form created! ✨', 'success');
+    }
+
+    function loadForm(formId) {
+      app.currentForm = app.forms.find(f => f.id === formId);
+      localStorage.setItem(app.STORAGE_KEYS.ACTIVE_FORM, formId);
+      renderFormEditor();
+      renderFormsList();
+    }
+
+    function renderFormsList() {
+      const container = document.getElementById('formsList');
+      
+      if (app.forms.length === 0) {
+        container.innerHTML = '<div class="empty-state">No forms yet.<br>Click "+ New" to create one.</div>';
+        return;
+      }
+
+      container.innerHTML = app.forms.map(form => `
+        <div class="form-item ${app.currentForm && app.currentForm.id === form.id ? 'active' : ''}" 
+             onclick="window.loadForm('${form.id}')">
+          <h3>${escapeHtml(form.name)}</h3>
+          <p>${form.wf_session_id ? 'Session: ' + form.wf_session_id : 'Not configured'}</p>
+        </div>
+      `).join('');
+    }
+
+    function renderFormEditor() {
+      const container = document.getElementById('editorContent');
+      const hasBearerToken = !!getBearerToken();
+      
+      container.innerHTML = `
+        <h2>✏️ Edit Form: ${escapeHtml(app.currentForm.name)}</h2>
+        
+        <div class="form-group">
+          <label>Form Name</label>
+          <input type="text" id="formName" value="${escapeHtml(app.currentForm.name)}">
+        </div>
+
+        ${!hasBearerToken ? `
+        <div class="info-box" style="background: #fef3c7; border-color: #fbbf24;">
+          <div style="color: #92400e; font-weight: 600; margin-bottom: 5px;">⚠️ Bearer Token Required</div>
+          <div style="color: #78350f; font-size: 14px;">
+            Please <a href="#" onclick="window.openSettings(); return false;" style="color: #b45309; text-decoration: underline;">configure your Bearer Token in Settings</a> before generating forms.
+          </div>
+        </div>
+        ` : ''}
+
+        <div class="section-title">⚡ Quick Import</div>
+        
+        <div class="form-group">
+          <label>Paste Infusionsoft Form HTML</label>
+          <textarea id="infusionsoftPaste" placeholder="Paste your entire Infusionsoft <form> HTML here and we'll extract the values automatically..." rows="4"></textarea>
+          <button class="btn-secondary btn-small" onclick="window.extractInfusionsoft()" style="margin-top: 8px;">🔍 Extract Infusionsoft Data</button>
+        </div>
+
+        <div class="form-group">
+          <label>WebinarFuel Widget URL</label>
+          <input type="url" id="webinarFuelUrl" placeholder="https://app.webinarfuel.com/webinars/18213/widgets/72956/124066/elements">
+          <button class="btn-secondary btn-small" onclick="window.extractWebinarFuel()" style="margin-top: 8px;">🔍 Extract WebinarFuel Data</button>
+          <small>Paste the WebinarFuel widget URL to extract Widget ID and Version</small>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="section-title">📧 Infusionsoft Configuration</div>
+        
+        <div class="form-group">
+          <label>Infusionsoft Form Action URL</label>
+          <input type="url" id="infusionsoftAction" value="${escapeHtml(app.currentForm.infusionsoft_action)}" 
+                 placeholder="https://yv932.infusionsoft.com/app/form/process/...">
+          <small>The action URL from your Infusionsoft form</small>
+        </div>
+
+        <div class="form-group">
+          <label>Infusionsoft Form XID</label>
+          <input type="text" id="infusionsoftXid" value="${escapeHtml(app.currentForm.infusionsoft_xid)}" 
+                 placeholder="0e88a9caa97c29d4c16c4bb07baa0bd2">
+          <small>The unique form identifier (xid parameter)</small>
+        </div>
+
+        <div class="form-group">
+          <label>Infusionsoft Form Name</label>
+          <input type="text" id="infusionsoftFormName" value="${escapeHtml(app.currentForm.infusionsoft_form_name)}" 
+                 placeholder="Web Form submitted">
+          <small>The internal form name in Infusionsoft</small>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="section-title">🎥 WebinarFuel Configuration</div>
+
+        <div class="form-group">
+          <label>WebinarFuel Session ID</label>
+          <input type="text" id="wfSessionId" value="${escapeHtml(app.currentForm.wf_session_id)}" 
+                 placeholder="68133">
+          <small>The webinar session ID (unique per webinar)</small>
+        </div>
+
+        <div class="form-group">
+          <label>WebinarFuel Widget ID</label>
+          <input type="text" id="wfWidgetId" value="${escapeHtml(app.currentForm.wf_widget_id)}" 
+                 placeholder="78139">
+          <small>The widget ID for this webinar</small>
+        </div>
+
+        <div class="form-group">
+          <label>WebinarFuel Widget Version</label>
+          <input type="text" id="wfWidgetVersion" value="${escapeHtml(app.currentForm.wf_widget_version)}" 
+                 placeholder="129684">
+          <small>The widget version ID</small>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="section-title">🎨 Customization</div>
+
+        <div class="form-group">
+          <label class="checkbox-label" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+            <input type="checkbox" id="isReplay" ${app.currentForm.is_replay ? 'checked' : ''} 
+                   style="width: auto; cursor: pointer;" />
+            <span>📹 Replay Registration (No Phone/Consent)</span>
+          </label>
+          <small>Enable this for replay registrations that don't collect phone numbers</small>
+        </div>
+
+        <div class="form-group">
+          <label>SMS Consent Checkbox ID</label>
+          <input type="text" id="consentId" value="${escapeHtml(app.currentForm.consent_id)}" 
+                 placeholder="inf_option_SMSConsent">
+          <small>The ID for the SMS consent checkbox</small>
+        </div>
+
+        <div class="form-group">
+          <label>SMS Consent Checkbox Value</label>
+          <input type="text" id="consentValue" value="${escapeHtml(app.currentForm.consent_value || '3872')}" 
+                 placeholder="3872">
+          <small>The value attribute for the checkbox (extracted from Infusionsoft form)</small>
+        </div>
+
+        <div class="form-group">
+          <label>SMS Consent Message</label>
+          <textarea id="consentMessage" rows="4" placeholder="By checking this box, I agree to receive text messages...">${escapeHtml(app.currentForm.consent_message || 'By checking this box, I agree to receive text messages (such as reminders, updates, and promotional offers) from The Cash Flow Academy at the mobile number provided. Message and data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply STOP to unsubscribe.')}</textarea>
+          <small>The message displayed next to the SMS consent checkbox</small>
+        </div>
+
+        <div class="form-group">
+          <label>Submit Button Text</label>
+          <input type="text" id="buttonText" value="${escapeHtml(app.currentForm.button_text)}" 
+                 placeholder="🔥 Reserve My Free Seat Now">
+        </div>
+
+        <div class="button-group">
+          <button class="btn-primary" onclick="window.saveCurrentForm()">💾 Save Form</button>
+          <button class="btn-success" onclick="window.generateCode()">🚀 Generate Code</button>
+          <button class="btn-danger" onclick="window.deleteCurrentForm()">🗑️ Delete Form</button>
+        </div>
+      `;
+    }
+
+    function showEmptyEditor() {
+      const container = document.getElementById('editorContent');
+      container.innerHTML = `
+        <div class="empty-state" style="padding: 100px 20px;">
+          <h2 style="color: #9ca3af; margin-bottom: 20px;">No form selected</h2>
+          <p>Select a form from the list or create a new one to get started.</p>
+        </div>
+      `;
+    }
+
+    // Save/Delete
+    window.saveCurrentForm = function() {
+      if (!app.currentForm) return;
+
+      app.currentForm.name = document.getElementById('formName').value;
+      app.currentForm.infusionsoft_action = document.getElementById('infusionsoftAction').value;
+      app.currentForm.infusionsoft_xid = document.getElementById('infusionsoftXid').value;
+      app.currentForm.infusionsoft_form_name = document.getElementById('infusionsoftFormName').value;
+      app.currentForm.wf_session_id = document.getElementById('wfSessionId').value;
+      app.currentForm.wf_widget_id = document.getElementById('wfWidgetId').value;
+      app.currentForm.wf_widget_version = document.getElementById('wfWidgetVersion').value;
+      app.currentForm.consent_id = document.getElementById('consentId').value;
+      app.currentForm.consent_value = document.getElementById('consentValue').value;
+      app.currentForm.consent_message = document.getElementById('consentMessage').value;
+      app.currentForm.button_text = document.getElementById('buttonText').value;
+      app.currentForm.is_replay = document.getElementById('isReplay').checked;
+
+      saveForms();
+      renderFormsList();
+      showToast('Form saved! 💾', 'success');
+    };
+
+    window.deleteCurrentForm = function() {
+      if (!app.currentForm) return;
+      
+      if (!confirm(`Delete "${app.currentForm.name}"? This cannot be undone.`)) return;
+
+      app.forms = app.forms.filter(f => f.id !== app.currentForm.id);
+      saveForms();
+      app.currentForm = null;
+      localStorage.removeItem(app.STORAGE_KEYS.ACTIVE_FORM);
+      renderFormsList();
+      
+      if (app.forms.length > 0) {
+        loadForm(app.forms[0].id);
+      } else {
+        showEmptyEditor();
+      }
+      
+      showToast('Form deleted 🗑️');
+    };
+
+    // Extraction
+    window.extractInfusionsoft = function() {
+      const html = document.getElementById('infusionsoftPaste').value;
+      if (!html) {
+        showToast('Please paste Infusionsoft form HTML first ❌');
+        return;
+      }
+
+      try {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const form = doc.querySelector('form');
+
+        if (!form) {
+          showToast('No form found in pasted HTML ❌');
+          return;
+        }
+
+        const action = form.getAttribute('action');
+        if (action) document.getElementById('infusionsoftAction').value = action;
+
+        const xidInput = form.querySelector('input[name="inf_form_xid"]');
+        if (xidInput) document.getElementById('infusionsoftXid').value = xidInput.value;
+
+        const nameInput = form.querySelector('input[name="inf_form_name"]');
+        if (nameInput) document.getElementById('infusionsoftFormName').value = nameInput.value;
+
+        const consentId = form.dataset.consentId;
+        const checkbox = form.querySelector('input[type="checkbox"][name*="Bycheckingthisbox"]');
+        
+        if (consentId) {
+          document.getElementById('consentId').value = consentId;
+        } else if (checkbox) {
+          document.getElementById('consentId').value = checkbox.id || checkbox.name;
+        }
+        
+        // Extract checkbox value if present and store it
+        if (checkbox && checkbox.value && app.currentForm) {
+          app.currentForm.consent_value = checkbox.value;
+          console.log('[Extract] Checkbox value:', checkbox.value);
+        }
+
+        showToast('Infusionsoft data extracted! ✨', 'success');
+        document.getElementById('infusionsoftPaste').value = '';
+      } catch (error) {
+        console.error('Extract error:', error);
+        showToast('Failed to extract data. Check the HTML format ❌');
+      }
+    };
+
+    window.extractWebinarFuel = function() {
+      const url = document.getElementById('webinarFuelUrl').value;
+      if (!url) {
+        showToast('Please enter a WebinarFuel URL first ❌');
+        return;
+      }
+
+      try {
+        const urlObj = new URL(url);
+        
+        // Method 1: Extract from URL params (?widget_id=123&version_id=456...)
+        let widgetId = urlObj.searchParams.get('widget_id');
+        let versionId = urlObj.searchParams.get('version_id') || urlObj.searchParams.get('widget_version_id');
+        const bearerToken = urlObj.searchParams.get('bearer_token') || urlObj.searchParams.get('token');
+
+        // Method 2: Extract from path
+        const pathParts = urlObj.pathname.split('/').filter(p => p);
+        
+        // Format: /webinars/18213/widgets/72956/124066/elements
+        if (pathParts.includes('widgets')) {
+          const widgetsIndex = pathParts.indexOf('widgets');
+          if (!widgetId && pathParts[widgetsIndex + 1]) {
+            widgetId = pathParts[widgetsIndex + 1];
+          }
+          if (!versionId && pathParts[widgetsIndex + 2]) {
+            versionId = pathParts[widgetsIndex + 2];
+          }
+        }
+        
+        // Format: /embed/viewers/[widget_id]/[version_id]
+        if (pathParts.includes('viewers')) {
+          const viewersIndex = pathParts.indexOf('viewers');
+          if (!widgetId && pathParts[viewersIndex + 1]) {
+            widgetId = pathParts[viewersIndex + 1];
+          }
+          if (!versionId && pathParts[viewersIndex + 2]) {
+            versionId = pathParts[viewersIndex + 2];
+          }
+        }
+
+        // Set the extracted values
+        if (widgetId) document.getElementById('wfWidgetId').value = widgetId;
+        if (versionId) document.getElementById('wfWidgetVersion').value = versionId;
+        
+        // Save bearer token if found
+        if (bearerToken && bearerToken !== getBearerToken()) {
+          setBearerToken(bearerToken);
+          showToast('Bearer token also saved to Settings! 🔐', 'success');
+        }
+
+        const extracted = !!(widgetId || versionId);
+        
+        if (extracted) {
+          showToast('WebinarFuel data extracted! ✨', 'success');
+          document.getElementById('webinarFuelUrl').value = '';
+          // Don't re-render the form, just clear the URL field
+        } else {
+          showToast('Could not extract data from URL. Please check the format ⚠️');
+        }
+      } catch (error) {
+        console.error('URL parse error:', error);
+        showToast('Invalid URL format ❌');
+      }
+    };
+
+    // Code Generation
+    window.generateCode = function() {
+      if (!app.currentForm) return;
+
+      const bearerToken = getBearerToken();
+
+      if (!bearerToken) {
+        showToast('Please set Bearer Token in Settings first ⚠️');
+        openSettings();
+        return;
+      }
+
+      if (!app.currentForm.wf_session_id || !app.currentForm.wf_widget_id || !app.currentForm.wf_widget_version) {
+        showToast('Please fill in all WebinarFuel fields ❌');
+        return;
+      }
+
+      const code = generateEmbedCode(app.currentForm, bearerToken);
+      document.getElementById('codePreview').textContent = code;
+      document.getElementById('codeModal').classList.add('active');
+    };
+
+    function generateEmbedCode(form, bearerToken) {
+      const formId = 'inf_form_' + form.infusionsoft_xid;
+      
+      return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Webinar Registration</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Scoped to this form */
+    #${formId} {
+      width: 100%;
+      max-width: 560px;
+      margin: 0 auto;
+      background: transparent;
+      padding: 0;
+      font-family: 'Montserrat', sans-serif !important;
+      text-align: left !important;
+    }
+
+    #${formId} .infusion-field {
+      margin-bottom: 16px;
+      text-align: left !important;
+    }
+
+    /* Config error banner */
+    #${formId} .config-error {
+      background: #FFF5F5;
+      border: 1px solid #F5C2C7;
+      color: #842029;
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 14px;
+    }
+
+    #${formId} .config-error code {
+      background: #ffe3e3;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+
+    /* Floating labels */
+    #${formId} .float-field {
+      position: relative;
+    }
+
+    #${formId} .float-field input {
+      width: 100%;
+      padding: 14px 12px 12px;
+      border: 1px solid #cfd4dc;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #fff;
+      outline: none;
+      transition: border-color 0.15s ease;
+      position: relative;
+      z-index: 1;
+      font-family: 'Montserrat', sans-serif !important;
+    }
+
+    #${formId} .float-field input:focus {
+      border-color: #F28C28;
+    }
+
+    #${formId} .float-field label {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #fff;
+      padding: 0 6px;
+      color: #4b5563 !important;
+      font-size: 15px !important;
+      font-family: 'Montserrat', sans-serif !important;
+      line-height: 1;
+      pointer-events: none;
+      transition: all 0.15s ease;
+      z-index: 2;
+      display: block !important;
+      opacity: 1 !important;
+    }
+
+    #${formId} .float-field input:focus + label,
+    #${formId} .float-field input.has-value + label {
+      top: -8px;
+      transform: none;
+      font-size: 12px !important;
+      color: #F28C28 !important;
+    }
+
+    /* Consent row (left aligned) */
+    #${formId} .sms-consent-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      cursor: pointer;
+      font-family: 'Montserrat', sans-serif !important;
+      text-align: left !important;
+    }
+
+    #${formId} .sms-consent-row input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    #${formId} .sms-consent-text {
+      font-size: 13px;
+      line-height: 1.35;
+      color: #333;
+    }
+
+    #${formId} .infusion-submit {
+      margin-top: 20px;
+    }
+
+    /* Orange CTA button */
+    #${formId} .infusion-submit button {
+      width: 100%;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 10px;
+      background: #F28C28;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif !important;
+      cursor: pointer;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    #${formId} .infusion-submit button:hover:not(:disabled) {
+      background: #e67c1f;
+      transform: translateY(-1px);
+    }
+
+    #${formId} .infusion-submit button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+    }
+
+    /* Errors (optional) */
+    #${formId} .input-error {
+      border-color: #CF252D !important;
+    }
+
+    #${formId} .error-message {
+      color: #CF252D;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    /* Mobile responsive styles */
+    @media (max-width: 600px) {
+      #${formId} {
+        max-width: 100%;
+        padding: 0;
+      }
+
+      #${formId} .float-field input {
+        font-size: 16px; /* Prevents zoom on iOS */
+        padding: 16px 12px 12px;
+      }
+
+      #${formId} .float-field label {
+        font-size: 14px !important;
+      }
+
+      #${formId} .float-field input:focus + label,
+      #${formId} .float-field input.has-value + label {
+        font-size: 11px !important;
+      }
+
+      #${formId} .sms-consent-text {
+        font-size: 12px;
+        line-height: 1.4;
+      }
+
+      #${formId} .infusion-submit button {
+        padding: 14px 16px;
+        font-size: 16px;
+      }
+
+      #${formId} .infusion-field {
+        margin-bottom: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+<form accept-charset="UTF-8"
+      action="${form.infusionsoft_action}"
+      class="infusion-form"
+      id="${formId}"
+      method="POST"
+      data-inf-form-id="${formId}"
+      data-wf-session-id="${form.wf_session_id}"
+      data-wf-widget-id="${form.wf_widget_id}"
+      data-wf-widget-version="${form.wf_widget_version}"
+      data-wf-widget-name="Embed"
+      data-wf-bearer-token="${bearerToken}"
+      data-consent-id="${form.consent_id}"
+      data-is-replay="${form.is_replay ? 'true' : 'false'}">
+  <input name="inf_form_xid" type="hidden" value="${form.infusionsoft_xid}" />
+  <input name="inf_form_name" type="hidden" value="${form.infusionsoft_form_name}" />
+  <input name="infusionsoft_version" type="hidden" value="1.70.0.852640" />
+  <div class="infusion-field float-field">
+    <input id="inf_field_FirstName" name="inf_field_FirstName" type="text" autocomplete="given-name" />
+    <label for="inf_field_FirstName">First Name</label>
+  </div>
+  <div class="infusion-field float-field">
+    <input id="inf_field_LastName" name="inf_field_LastName" type="text" autocomplete="family-name" />
+    <label for="inf_field_LastName">Last Name</label>
+  </div>
+  <div class="infusion-field float-field">
+    <input id="inf_field_Email" name="inf_field_Email" type="email" autocomplete="email" required />
+    <label for="inf_field_Email">Email *</label>
+  </div>
+  ${!form.is_replay ? `<div class="infusion-field float-field">
+    <input id="inf_field_Phone1" name="inf_field_Phone1" type="tel" autocomplete="tel" />
+    <label for="inf_field_Phone1">Mobile Phone</label>
+  </div>
+  <div class="infusion-field">
+    <label class="sms-consent-row" for="${form.consent_id}">
+      <input id="${form.consent_id}" name="${form.consent_id}" type="checkbox" value="${form.consent_value || '3872'}" />
+      <span class="sms-consent-text">
+        ${form.consent_message || 'By checking this box, I agree to receive text messages (such as reminders, updates, and promotional offers) from The Cash Flow Academy at the mobile number provided. Message and data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply STOP to unsubscribe.'}
+      </span>
+    </label>
+  </div>` : ''}
+  <input name="inf_custom_GaContent" type="hidden" value="null" />
+  <input name="inf_custom_GaSource" type="hidden" value="null" />
+  <input name="inf_custom_GaMedium" type="hidden" value="null" />
+  <input name="inf_custom_GaTerm" type="hidden" value="null" />
+  <input name="inf_custom_GaCampaign" type="hidden" value="null" />
+  <input name="inf_custom_GaCampaignID" type="hidden" value="null" />
+  <input name="inf_custom_GaReferurl" type="hidden" value="null" />
+  <input name="inf_custom_fbclid" type="hidden" value="null" />
+  <div class="infusion-submit">
+    <button id="inf_submit_btn" type="submit">${form.button_text}</button>
+  </div>
+</form>
+<` + `script src="https://yv932.infusionsoft.app/app/webTracking/getTrackingCode"><` + `/script>
+<` + `script src="https://yv932.infusionsoft.com/app/timezone/timezoneInputJs?xid=${form.infusionsoft_xid}"><` + `/script>
+<` + `script src="https://yv932.infusionsoft.com/js/jquery/jquery-3.3.1.js"><` + `/script>
+<` + `script src="https://yv932.infusionsoft.app/app/webform/overwriteRefererJs"><` + `/script>
+<` + `script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"><` + `/script>
+<` + `script>
+(function() {
+  'use strict';
+
+  // ============================================
+  // WebinarFuel Bridge Script
+  // ============================================
+
+  // 🔧 DEBUG MODE - Set to false by default, enable with ?debug=true in URL
+  var urlParams = new URLSearchParams(window.location.search);
+  var DEBUG = urlParams.get('debug') === 'true';
+  
+  if (DEBUG) {
+    console.log('%c[WF Bridge] 🐛 DEBUG MODE ENABLED', 'background: #222; color: #00ff00; font-weight: bold; padding: 4px;');
+    console.log('%cTo disable: Remove ?debug=true from URL', 'color: #888;');
+  }
+
+  var UTM_PARAMS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id', 'fbclid'];
+  var STORAGE_PREFIX = 'wf_';
+
+  // Logger helper
+  function _wf_log(message, data, level) {
+    if (!DEBUG) return;
+    
+    var prefix = '[WF Bridge]';
+    var emoji = {
+      info: 'ℹ️',
+      success: '✅',
+      warning: '⚠️',
+      error: '❌',
+      data: '📊'
+    }[level] || '🔍';
+    
+    var formattedMsg = prefix + ' ' + emoji + ' ' + message;
+    
+    if (data !== undefined) {
+      console.log(formattedMsg, data);
+    } else {
+      console.log(formattedMsg);
+    }
+  }
+
+  // Helper: Get parameter from URL or localStorage
+  function _wf_getStoredOrURLParam(key) {
+    var url = new URLSearchParams(window.location.search);
+    var urlValue = url.get(key);
+    if (urlValue) {
+      _wf_log('Found URL param: ' + key, urlValue, 'data');
+      return urlValue;
+    }
+    var storedValue = localStorage.getItem(STORAGE_PREFIX + key);
+    if (storedValue) {
+      _wf_log('Found stored param: ' + key, storedValue, 'data');
+    }
+    return storedValue;
+  }
+
+  // Helper: Persist parameter to localStorage if present
+  function _wf_persistIfPresent(key) {
+    var url = new URLSearchParams(window.location.search);
+    var value = url.get(key);
+    if (value) {
+      localStorage.setItem(STORAGE_PREFIX + key, value);
+      _wf_log('Persisted to localStorage: ' + key, value, 'success');
+    }
+  }
+
+  // Helper: Inject hidden field value
+  function _wf_injectField(form, fieldName, value) {
+    var field = form.querySelector('[name="' + fieldName + '"]');
+    if (field && value) {
+      field.value = value;
+      _wf_log('Injected field: ' + fieldName, value, 'success');
+    }
+  }
+
+  // Helper: Normalize phone to E.164 format (+1XXXXXXXXXX)
+  function _wf_normalizePhone(phone) {
+    if (!phone) return '';
+    var cleaned = phone.replace(/\\D/g, '');
+    var normalized;
+    if (cleaned.length === 10) {
+      normalized = '+1' + cleaned;
+    } else if (cleaned.length === 11 && cleaned[0] === '1') {
+      normalized = '+' + cleaned;
+    } else {
+      normalized = phone;
+    }
+    _wf_log('Phone normalization: ' + phone + ' → ' + normalized, null, 'info');
+    return normalized;
+  }
+
+  // Helper: Fetch with timeout
+  function _wf_fetchWithTimeout(url, options, timeout) {
+    return Promise.race([
+      fetch(url, options),
+      new Promise(function(_, reject) {
+        setTimeout(function() {
+          reject(new Error('Request timeout'));
+        }, timeout);
+      })
+    ]);
+  }
+
+  // Helper: Show configuration error
+  function _wf_showConfigError(form, message) {
+    var errorDiv = document.createElement('div');
+    errorDiv.className = 'config-error';
+    errorDiv.textContent = '⚠️ Configuration Error: ' + message;
+    form.insertBefore(errorDiv, form.firstChild);
+  }
+
+  // Initialize bridge
+  function initWFBridge(formId) {
+    _wf_log('🚀 Initializing WebinarFuel Bridge for form: ' + formId, null, 'info');
+    
+    var form = document.getElementById(formId);
+    if (!form) {
+      _wf_log('Form element not found in DOM!', formId, 'error');
+      return;
+    }
+
+    // Validate required configuration
+    var sessionId = form.getAttribute('data-wf-session-id');
+    var widgetId = form.getAttribute('data-wf-widget-id');
+    var widgetVersion = form.getAttribute('data-wf-widget-version');
+    var bearerToken = form.getAttribute('data-wf-bearer-token');
+    var consentId = form.getAttribute('data-consent-id');
+    var isReplay = form.getAttribute('data-is-replay') === 'true';
+
+    _wf_log('Configuration loaded:', {
+      sessionId: sessionId,
+      widgetId: widgetId,
+      widgetVersion: widgetVersion,
+      bearerToken: bearerToken ? '***' + bearerToken.slice(-8) : null,
+      consentId: consentId,
+      isReplay: isReplay
+    }, 'data');
+
+    if (!sessionId || !widgetId || !widgetVersion) {
+      _wf_log('Missing required WebinarFuel configuration!', null, 'error');
+      _wf_showConfigError(form, 'Missing required WebinarFuel configuration (session ID, widget ID, or version)');
+      return;
+    }
+
+    if (!bearerToken) {
+      _wf_log('Missing bearer token!', null, 'error');
+      _wf_showConfigError(form, 'Missing WebinarFuel bearer token');
+      return;
+    }
+
+    if (!consentId) {
+      _wf_log('No consent checkbox ID - phone will always be submitted', null, 'warning');
+    }
+
+    _wf_log('Configuration validation passed ✓', null, 'success');
+
+    // Set up floating label behavior
+    var floatInputs = form.querySelectorAll('.float-field input');
+    var syncFloat = function(inp) {
+      if ((inp.value || '').trim() !== '') {
+        inp.classList.add('has-value');
+      } else {
+        inp.classList.remove('has-value');
+      }
+    };
+    
+    floatInputs.forEach(function(inp) {
+      syncFloat(inp);
+      inp.addEventListener('focus', function() {
+        this.classList.add('is-focus');
+      });
+      inp.addEventListener('blur', function() {
+        this.classList.remove('is-focus');
+      });
+      inp.addEventListener('input', function() {
+        syncFloat(this);
+      });
+    });
+
+    // Persist UTM parameters
+    _wf_log('📦 Processing UTM parameters...', null, 'info');
+    UTM_PARAMS.forEach(function(param) {
+      _wf_persistIfPresent(param);
+    });
+
+    // Inject UTM parameters into hidden fields
+    _wf_log('💉 Injecting UTM parameters into hidden fields...', null, 'info');
+    _wf_injectField(form, 'inf_custom_GaSource', _wf_getStoredOrURLParam('utm_source'));
+    _wf_injectField(form, 'inf_custom_GaMedium', _wf_getStoredOrURLParam('utm_medium'));
+    _wf_injectField(form, 'inf_custom_GaCampaign', _wf_getStoredOrURLParam('utm_campaign'));
+    _wf_injectField(form, 'inf_custom_GaTerm', _wf_getStoredOrURLParam('utm_term'));
+    _wf_injectField(form, 'inf_custom_GaContent', _wf_getStoredOrURLParam('utm_content'));
+    _wf_injectField(form, 'inf_custom_GaCampaignID', _wf_getStoredOrURLParam('utm_id'));
+    _wf_injectField(form, 'inf_custom_fbclid', _wf_getStoredOrURLParam('fbclid'));
+    _wf_injectField(form, 'inf_custom_GaReferurl', document.referrer);
+    
+    _wf_log('✅ Bridge initialization complete!', null, 'success');
+
+    // Attach submit handler
+    form.addEventListener('submit', function(e) {
+      handleSubmit(e, form, sessionId, widgetId, widgetVersion, bearerToken, consentId, isReplay);
+    });
+  }
+
+  // Handle form submission
+  function handleSubmit(e, form, sessionId, widgetId, widgetVersion, bearerToken, consentId, isReplay) {
+    e.preventDefault();
+    
+    _wf_log('📤 Form submission started' + (isReplay ? ' (REPLAY MODE)' : ''), null, 'info');
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var originalText = submitBtn.textContent;
+
+    // Get form values
+    var firstName = form.querySelector('[name="inf_field_FirstName"]').value.trim();
+    var lastName = form.querySelector('[name="inf_field_LastName"]').value.trim();
+    var email = form.querySelector('[name="inf_field_Email"]').value.trim();
+    
+    // Phone is only present in non-replay forms
+    var phoneField = form.querySelector('[name="inf_field_Phone1"]');
+    var phone = phoneField ? phoneField.value.trim() : '';
+
+    _wf_log('Form data collected:', {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      phone: phone ? '***' + phone.slice(-4) : '(none)',
+      isReplay: isReplay
+    }, 'data');
+
+    // Validate email
+    if (!email) {
+      _wf_log('Email validation failed - field is empty', null, 'error');
+      alert('Please enter your email address.');
+      return;
+    }
+
+    // Check SMS consent (only for non-replay forms)
+    var consentCheckbox = !isReplay && consentId ? form.querySelector('#' + consentId) : null;
+    var smsConsent = consentCheckbox ? consentCheckbox.checked : false;
+    
+    if (!isReplay) {
+      _wf_log('SMS consent status: ' + (smsConsent ? 'GRANTED ✓' : 'NOT GRANTED'), null, 'info');
+    }
+
+    // Normalize phone (only if present)
+    var normalizedPhone = phone ? _wf_normalizePhone(phone) : '';
+
+    // Get source and UTM params
+    var resolvedSource = window.location.href;
+    var utm_source = _wf_getStoredOrURLParam('utm_source') || '';
+
+    // Prepare WebinarFuel payload (using embed.webby.app format)
+    var wfPayload = {
+      version_id: widgetVersion,
+      recaptcha_action: 'wf_verify_recaptcha',
+      viewer: {
+        webinar_session_id: sessionId,
+        time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        email: email,
+        first_name: firstName,
+        last_name: lastName,
+        phone: (!isReplay && smsConsent && normalizedPhone) ? normalizedPhone : '',
+        lead: false,
+        registration_source_widget_type: 'embed',
+        registration_source_widget_name: 'Embed',
+        widget_id: widgetId,
+        widget_version_id: widgetVersion,
+        source: resolvedSource,
+        utm_source: utm_source,
+        utm_medium: _wf_getStoredOrURLParam('utm_medium') || '',
+        utm_campaign: _wf_getStoredOrURLParam('utm_campaign') || '',
+        utm_term: _wf_getStoredOrURLParam('utm_term') || '',
+        utm_content: _wf_getStoredOrURLParam('utm_content') || ''
+      }
+    };
+
+    // Log payload info
+    if (!isReplay && smsConsent && normalizedPhone) {
+      _wf_log('Phone will be included in WebinarFuel submission', normalizedPhone, 'success');
+    } else if (!isReplay && phone && !smsConsent) {
+      _wf_log('Phone will NOT be sent (no SMS consent)', null, 'warning');
+    } else if (isReplay) {
+      _wf_log('Replay mode: No phone field in submission', null, 'info');
+    }
+
+    // Disable submit button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+    _wf_log('Submit button disabled', null, 'info');
+
+    // Submit to WebinarFuel API (using CORS-enabled embed.webby.app endpoint)
+    var wfUrl = 'https://embed.webby.app/embed/v2/viewers';
+
+    _wf_log('🌐 WebinarFuel API Request:', {
+      url: wfUrl,
+      method: 'POST',
+      payload: wfPayload,
+      timeout: '4000ms'
+    }, 'info');
+
+    _wf_fetchWithTimeout(wfUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + bearerToken
+      },
+      body: JSON.stringify(wfPayload)
+    }, 4000)
+      .then(function(response) {
+        _wf_log('WebinarFuel API response status: ' + response.status, null, response.ok ? 'success' : 'error');
+        
+        if (!response.ok) {
+          throw new Error('WebinarFuel API error: ' + response.status);
+        }
+        return response.json();
+      })
+      .then(function(data) {
+        _wf_log('✅ WebinarFuel submission successful!', data, 'success');
+        
+        // Store CID if returned
+        if (data && data.cid) {
+          try {
+            localStorage.setItem('_wf_cid', data.cid);
+            _wf_log('Stored WebinarFuel CID', data.cid, 'info');
+          } catch(e) {}
+        }
+
+        // Update phone field with normalized value for Infusionsoft (only for non-replay forms)
+        if (!isReplay && normalizedPhone) {
+          form.querySelector('[name="inf_field_Phone1"]').value = normalizedPhone;
+          _wf_log('Phone field updated with normalized value for Infusionsoft', normalizedPhone, 'info');
+        }
+
+        // Ensure checkbox state is preserved for Infusionsoft submission (only for non-replay forms)
+        if (!isReplay) {
+          var currentConsentCheckbox = consentId ? form.querySelector('#' + consentId) : null;
+          if (currentConsentCheckbox) {
+            var currentlyChecked = currentConsentCheckbox.checked;
+            _wf_log('Current checkbox state before Infusionsoft submission:', currentlyChecked, 'data');
+            
+            // Explicitly set the checked property to ensure it matches user's selection
+            currentConsentCheckbox.checked = smsConsent;
+            
+            _wf_log('Consent checkbox set to ' + (smsConsent ? 'CHECKED (value will be sent)' : 'UNCHECKED (no value sent)') + ' for Infusionsoft', null, 'info');
+          } else {
+            _wf_log('Warning: Consent checkbox element not found', consentId, 'warning');
+          }
+        }
+
+        // Submit to Infusionsoft
+        _wf_log('📬 Submitting to Infusionsoft...', form.action, 'info');
+        
+        // Debug: Log form data being sent
+        if (DEBUG) {
+          var formData = new FormData(form);
+          var formDataObj = {};
+          formData.forEach(function(value, key) {
+            formDataObj[key] = value;
+          });
+          _wf_log('Form data being sent to Infusionsoft:', formDataObj, 'data');
+        }
+        
+        form.submit();
+      })
+      .catch(function(err) {
+        _wf_log('❌ Submission failed!', err.message, 'error');
+        alert('There was an error submitting your registration. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+        _wf_log('Submit button re-enabled', null, 'info');
+      });
+  }
+
+  // Auto-initialize on DOM ready
+  if (document.readyState === 'loading') {
+    _wf_log('Waiting for DOM to load...', null, 'info');
+    document.addEventListener('DOMContentLoaded', function() {
+      initWFBridge('${formId}');
+    });
+  } else {
+    initWFBridge('${formId}');
+  }
+})();
+<` + `/script>
+</body>
+</html>`;
+    }
+
+    function closeCodeModal() {
+      document.getElementById('codeModal').classList.remove('active');
+    }
+
+    function copyCode() {
+      const code = document.getElementById('codePreview').textContent;
+      navigator.clipboard.writeText(code).then(function() {
+        showToast('Code copied to clipboard! 📋', 'success');
+      }).catch(function() {
+        showToast('Failed to copy code ❌');
+      });
+    }
+
+    function downloadCode() {
+      const code = document.getElementById('codePreview').textContent;
+      const blob = new Blob([code], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = app.currentForm.name.replace(/[^a-z0-9]/gi, '-').toLowerCase() + '-registration.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Code downloaded! ⬇️', 'success');
+    }
+
+    // Utilities
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text || '';
+      return div.innerHTML;
+    }
+
+    function showToast(message, type) {
+      const toast = document.createElement('div');
+      toast.className = 'toast' + (type ? ' ' + type : '');
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      
+      setTimeout(function() {
+        toast.style.animation = 'slideIn 0.3s ease reverse';
+        setTimeout(function() { toast.remove(); }, 300);
+      }, 3000);
+    }
+
+    // Make loadForm available globally for onclick
+    window.loadForm = loadForm;
+  </script>
+
+</body>
+</html>
