@@ -1173,7 +1173,7 @@
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
           </head>
           <body>
-            ${embedCode}
+            ` + embedCode + `
             
             <script>
               console.log('🔬 iframe: WebinarFuel analysis script loaded');
@@ -1203,7 +1203,7 @@
                   window.parent.postMessage({
                     type: 'wf_analysis',
                     data: {
-                      embedId: '${embedId}',
+                      embedId: embedId,
                       hasDateParsing: hasDateParsing,
                       hasNameField: !!nameField,
                       hasEmailField: !!emailField,
@@ -1219,7 +1219,7 @@
                   window.parent.postMessage({
                     type: 'wf_analysis',
                     data: {
-                      embedId: '${embedId}',
+                      embedId: embedId,
                       hasDateParsing: false,
                       success: false,
                       error: 'Timeout waiting for WebinarFuel to load'
@@ -2151,7 +2151,7 @@ document.addEventListener('DOMContentLoaded', function () {
     infusionsoftXid: '` + form.infusionsoft_xid + `',
     infusionsoftAction: '` + form.infusionsoft_action + `'
   });
-  ${dateParsing}
+  ` + dateParsing + `
 
   // --- SMS Consent Injection ---
   function injectSmsConsentCheckbox() {
