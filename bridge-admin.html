@@ -525,6 +525,16 @@
         </div>
 
         <div class="form-group">
+          <label>Paste Infusionsoft Form HTML</label>
+          <textarea id="infusionsoftFormPaste" rows="4" placeholder="Paste your full Infusionsoft form HTML (or hosted form snippet) here..."></textarea>
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 8px;">
+            <button class="btn-primary btn-small" type="button" onclick="extractInfusionsoftFromPaste()">🔍 Extract Details</button>
+            <small id="infusionsoftExtractStatus" style="opacity: 0.75;"></small>
+          </div>
+          <small>We'll auto-fill Action URL, XID, and try to detect the SMS consent checkbox if present.</small>
+        </div>
+
+        <div class="form-group">
           <label>Infusionsoft Action URL</label>
           <input type="text" id="infusionsoftAction" value="${escapeHtml(app.currentForm.infusionsoft_action)}" 
                  placeholder="https://yv932.infusionsoft.com/app/form/process/xxx">
@@ -616,6 +626,60 @@
       const code = generateBridgeCode(app.currentForm);
       document.getElementById('codePreview').textContent = code;
       document.getElementById('codeModal').classList.add('active');
+    }
+
+    // Extract Infusionsoft details from pasted HTML
+    function extractInfusionsoftFromPaste() {
+      const statusEl = document.getElementById('infusionsoftExtractStatus');
+      const paste = (document.getElementById('infusionsoftFormPaste')?.value || '').trim();
+      if (!paste) {
+        statusEl.textContent = 'Nothing to extract.';
+        statusEl.style.color = '#b00';
+        return;
+      }
+
+      // Create a sandbox to parse pasted HTML
+      const tmp = document.createElement('div');
+      tmp.innerHTML = paste;
+
+      // Find form and action
+      const formEl = tmp.querySelector('form');
+      const action = formEl?.getAttribute('action') || '';
+
+      // Try to find inf_form_xid hidden input
+      let xid = '';
+      const xidInput = tmp.querySelector('input[name="inf_form_xid"]');
+      if (xidInput) xid = xidInput.getAttribute('value') || '';
+
+      // Consent field detection: look for checkbox likely used for SMS consent
+      // Heuristics: input[type=checkbox] whose name begins with 'inf_option' or contains 'Consent'
+      let consentId = app.currentForm?.consent_id || 'inf_option_SMSConsent';
+      let consentValue = app.currentForm?.consent_value || '';
+      const consentCandidate = tmp.querySelector('input[type="checkbox"][name^="inf_option"], input[type="checkbox"][name*="Consent" i]');
+      if (consentCandidate) {
+        consentId = consentCandidate.getAttribute('name') || consentId;
+        consentValue = consentCandidate.getAttribute('value') || consentValue || '1';
+      }
+
+      // Update inputs in the editor
+      if (action) document.getElementById('infusionsoftAction').value = action;
+      if (xid) document.getElementById('infusionsoftXid').value = xid;
+
+      // Update app state immediately so Generate Code uses it
+      if (app.currentForm) {
+        if (action) app.currentForm.infusionsoft_action = action;
+        if (xid) app.currentForm.infusionsoft_xid = xid;
+        app.currentForm.consent_id = consentId;
+        app.currentForm.consent_value = consentValue;
+      }
+
+      // Feedback
+      const parts = [];
+      if (action) parts.push('Action URL');
+      if (xid) parts.push('XID');
+      if (consentId) parts.push('Consent: ' + consentId + (consentValue ? '=' + consentValue : ''));
+      statusEl.textContent = parts.length ? ('Extracted ' + parts.join(', ')) : 'No recognizable fields found.';
+      statusEl.style.color = parts.length ? '#0a0' : '#b00';
     }
 
     function generateBridgeCode(form) {
@@ -803,6 +867,7 @@
     window.deleteForm = deleteForm;
     window.loadForm = loadForm;
     window.createNewForm = createNewForm;
+    window.extractInfusionsoftFromPaste = extractInfusionsoftFromPaste;
   </script>
 </body>
 </html>
