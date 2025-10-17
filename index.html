@@ -1094,7 +1094,7 @@
       
       try {
         console.log('🔄 Step 1: Calling generateEmbedCode...');
-        const code = generateEmbedCode(app.currentForm);
+        const code = generateEmbedCode(app.currentForm, bearerToken);
         console.log('📝 Step 2: Generated code length:', code.length);
         
         console.log('🔄 Step 3: Finding codePreview element...');
@@ -1132,7 +1132,7 @@
       }
     };
 
-    function generateEmbedCode(form) {
+    function generateEmbedCode(form, bearerToken) {
       const formId = 'inf_form_' + form.infusionsoft_xid;
       
       return `<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
