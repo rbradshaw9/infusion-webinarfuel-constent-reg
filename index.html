@@ -1091,33 +1091,45 @@
 
       console.log('✅ Validation passed - generating code');
       alert('Debug: About to generate code'); // Debug alert
-      const code = generateEmbedCode(app.currentForm);
-      console.log('📝 Generated code length:', code.length);
       
-      const codePreview = document.getElementById('codePreview');
-      if (codePreview) {
-        codePreview.textContent = code;
-        console.log('✅ Code set in preview element');
-      } else {
-        console.error('❌ Code preview element not found!');
-      }
-      
-      // Use setTimeout to ensure DOM updates complete
-      setTimeout(() => {
-        console.log('📋 Opening modal...');
-        const modal = document.getElementById('codeModal');
-        if (modal) {
-          modal.classList.add('active');
-          // Force display with inline styles as fallback
-          modal.style.display = 'flex';
-          modal.style.alignItems = 'center';
-          modal.style.justifyContent = 'center';
-          console.log('✅ Modal classList:', modal.classList.toString());
-          console.log('✅ Modal style display:', window.getComputedStyle(modal).display);
+      try {
+        console.log('🔄 Step 1: Calling generateEmbedCode...');
+        const code = generateEmbedCode(app.currentForm);
+        console.log('📝 Step 2: Generated code length:', code.length);
+        
+        console.log('🔄 Step 3: Finding codePreview element...');
+        const codePreview = document.getElementById('codePreview');
+        if (codePreview) {
+          codePreview.textContent = code;
+          console.log('✅ Step 4: Code set in preview element');
         } else {
-          console.error('❌ Code modal element not found!');
+          console.error('❌ Code preview element not found!');
+          return;
         }
-      }, 100);
+        
+        console.log('🔄 Step 5: Setting up modal display...');
+        // Use setTimeout to ensure DOM updates complete
+        setTimeout(() => {
+          console.log('📋 Step 6: Opening modal...');
+          const modal = document.getElementById('codeModal');
+          if (modal) {
+            modal.classList.add('active');
+            // Force display with inline styles as fallback
+            modal.style.display = 'flex';
+            modal.style.alignItems = 'center';
+            modal.style.justifyContent = 'center';
+            console.log('✅ Step 7: Modal classList:', modal.classList.toString());
+            console.log('✅ Step 8: Modal style display:', window.getComputedStyle(modal).display);
+            alert('Debug: Modal should now be visible!'); // Debug confirmation
+          } else {
+            console.error('❌ Code modal element not found!');
+          }
+        }, 100);
+        
+      } catch (error) {
+        console.error('❌ Error in generateCode:', error);
+        alert('Debug: Error occurred - ' + error.message);
+      }
     };
 
     function generateEmbedCode(form) {
