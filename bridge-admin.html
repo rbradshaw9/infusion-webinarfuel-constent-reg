@@ -707,95 +707,97 @@
         '    <input name="inf_field_FirstName" type="hidden" />\n' +
         '    <input name="inf_field_LastName" type="hidden" />\n' +
         '    <input name="inf_field_Email" type="hidden" />\n' +
-        '    <input name="inf_field_Phone1" type="hidden" />\n\n' +
-        '    <!-- SMS Consent Checkbox -->\n' +
-        '    <input id="' + form.consent_id + '_bridge" name="' + form.consent_id + '" type="checkbox" value="' + form.consent_value + '" />\n' +
+        '    <input name="inf_field_Phone1" type="hidden" />\n' +
+        '    <input name="inf_custom_WebinarDate" type="hidden" />\n' +
+        '    <input name="wf_cid_field" type="hidden" />\n\n' +
+        '    <input name="inf_custom_GaSource" type="hidden" />\n' +
+        '    <input name="inf_custom_GaMedium" type="hidden" />\n' +
+        '    <input name="inf_custom_GaCampaign" type="hidden" />\n' +
+        '    <input name="inf_custom_GaTerm" type="hidden" />\n' +
+        '    <input name="inf_custom_GaContent" type="hidden" />\n' +
+        '    <input name="inf_custom_GaReferurl" type="hidden" />\n' +
+        '    <input name="inf_custom_GaCampaignID" type="hidden" />\n' +
         '  </form>\n' +
         '</div>\n\n' +
         '<script>\n' +
         'document.addEventListener(\'DOMContentLoaded\', function () {\n' +
         '  console.log("🚀 WebinarFuel to Infusionsoft bridge initialized");\n\n' +
-        '  // Watch for WebinarFuel registration form submission\n' +
-        '  function watchForRegistration() {\n' +
-        '    const observer = new MutationObserver(() => {\n' +
-        '      // Look for WebinarFuel registration form\n' +
-        '      const wfForm = document.querySelector(\'.wf_registration_form form, .wf-registration-form form, [class*="registration"] form\');\n' +
-        '      \n' +
-        '      if (wfForm) {\n' +
-        '        console.log("📋 WebinarFuel registration form found");\n' +
-        '        \n' +
-        '        // Add event listener to form submission\n' +
-        '        wfForm.addEventListener(\'submit\', function(e) {\n' +
-        '          console.log("📝 WebinarFuel form submitted, capturing data...");\n' +
-        '          \n' +
-        '          // Extract registration data\n' +
-        '          const firstName = wfForm.querySelector(\'input[name*="first"], input[name*="First"], input[placeholder*="First"]\')?.value || \'\';\n' +
-        '          const lastName = wfForm.querySelector(\'input[name*="last"], input[name*="Last"], input[placeholder*="Last"]\')?.value || \'\';\n' +
-        '          const email = wfForm.querySelector(\'input[type="email"], input[name*="email"], input[placeholder*="email"]\')?.value || \'\';\n' +
-        '          const phone = wfForm.querySelector(\'input[type="tel"], input[name*="phone"], input[placeholder*="phone"]\')?.value || \'\';\n' +
-        '          \n' +
-        '          console.log("📊 Captured data:", { firstName, lastName, email, phone });\n' +
-        '          \n' +
-        '          // Submit to Infusionsoft after a short delay\n' +
-        '          setTimeout(() => {\n' +
-        '            submitToInfusionsoft(firstName, lastName, email, phone);\n' +
-        '          }, 1000);\n' +
-        '        });\n' +
-        '        \n' +
-        '        observer.disconnect();\n' +
-        '      }\n' +
-        '    });\n' +
-        '    \n' +
-        '    observer.observe(document.body, { childList: true, subtree: true });\n' +
-        '  }\n\n' +
-        '  function submitToInfusionsoft(firstName, lastName, email, phone) {\n' +
-        '    console.log("📤 Submitting to Infusionsoft...");\n' +
-        '    \n' +
+        '  function submitInfForm() {\n' +
         '    const form = document.getElementById(\'' + formId + '\');\n' +
-        '    if (!form) {\n' +
-        '      console.error("❌ Infusionsoft form not found");\n' +
+        '    if (!form) return console.error("❌ Infusionsoft form not found");\n\n' +
+        '    const nameInput = document.querySelector(\'input[name="input_T9Z24O"]\');\n' +
+        '    const emailInput = document.querySelector(\'input[type="email"]\');\n' +
+        '    const phoneInput = document.querySelector(\'input[type="tel"]\');\n\n' +
+        '    if (!nameInput || !emailInput) {\n' +
+        '      console.error("❌ Missing name or email input in WF modal");\n' +
         '      return;\n' +
         '    }\n\n' +
-        '    // Populate hidden form fields\n' +
-        '    const setField = (name, value) => {\n' +
-        '      const field = form.querySelector(\'[name="\' + name + \'"]\');\n' +
-        '      if (field && value) {\n' +
-        '        field.value = value;\n' +
-        '        console.log("✅ Set " + name + ":", value);\n' +
-        '      }\n' +
+        '    const fullName = nameInput.value || \'\';\n' +
+        '    const email = emailInput.value || \'\';\n' +
+        '    const phone = phoneInput?.value || \'\';\n' +
+        '    const cid = localStorage.getItem(\'_wf_cid\') || \'\';\n' +
+        '    const date = window.webinarDateFormatted || \'\';\n\n' +
+        '    const { firstName, lastName } = parseName(fullName);\n\n' +
+        '    const set = (name, value) => {\n' +
+        '      const input = form.querySelector(\'input[name="\' + name + \'"]\');\n' +
+        '      if (input) input.value = value;\n' +
         '    };\n\n' +
-        '    setField(\'inf_field_FirstName\', firstName);\n' +
-        '    setField(\'inf_field_LastName\', lastName);\n' +
-        '    setField(\'inf_field_Email\', email);\n' +
-        '    setField(\'inf_field_Phone1\', phone);\n\n' +
-        '    // Set SMS consent to checked (user registered, so consent is implied)\n' +
-        '    const smsCheckbox = form.querySelector(\'input[id="' + form.consent_id + '_bridge"]\');\n' +
-        '    if (smsCheckbox) {\n' +
-        '      smsCheckbox.checked = true;\n' +
-        '      console.log("✅ SMS consent checkbox checked");\n' +
-        '    }\n\n' +
+        '    set(\'inf_field_FirstName\', firstName);\n' +
+        '    set(\'inf_field_LastName\', lastName);\n' +
+        '    set(\'inf_field_Email\', email);\n' +
+        '    set(\'inf_field_Phone1\', phone);\n' +
+        '    set(\'inf_custom_WebinarDate\', date);\n' +
+        '    set(\'wf_cid_field\', cid);\n' +
+        '    populateGAFields(form);\n\n' +
+        '    console.log("📨 Submitting Infusionsoft with:", {\n' +
+        '      firstName, lastName, email, phone, cid, date\n' +
+        '    });\n\n' +
         '    try {\n' +
-        '      // Submit form using hidden iframe to avoid page redirect\n' +
-        '      const iframe = document.createElement("iframe");\n' +
-        '      iframe.style.display = "none";\n' +
-        '      iframe.name = "hiddenFrame";\n' +
-        '      document.body.appendChild(iframe);\n' +
-        '      \n' +
-        '      form.target = "hiddenFrame";\n' +
         '      form.submit();\n' +
-        '      \n' +
-        '      console.log("🎉 Successfully submitted to Infusionsoft via hidden iframe!");\n' +
-        '      \n' +
-        '      // Clean up iframe after a short delay\n' +
-        '      setTimeout(() => {\n' +
-        '        document.body.removeChild(iframe);\n' +
-        '      }, 3000);\n' +
+        '      console.log("✅ Infusionsoft form submitted");\n' +
         '    } catch (error) {\n' +
         '      console.error("❌ Infusionsoft submission failed:", error);\n' +
         '    }\n' +
         '  }\n\n' +
-        '  // Start watching for registration\n' +
-        '  watchForRegistration();\n' +
+        '  // --- GA / CID / Name Parsing ---\n' +
+        '  function populateGAFields(form) {\n' +
+        '    const params = new URLSearchParams(window.location.search);\n' +
+        '    const ref = document.referrer || window.location.href;\n' +
+        '    const fields = {\n' +
+        '      \'inf_custom_GaSource\': params.get(\'utm_source\') || \'null\',\n' +
+        '      \'inf_custom_GaMedium\': params.get(\'utm_medium\') || \'null\',\n' +
+        '      \'inf_custom_GaCampaign\': params.get(\'utm_campaign\') || \'null\',\n' +
+        '      \'inf_custom_GaTerm\': params.get(\'utm_term\') || \'null\',\n' +
+        '      \'inf_custom_GaContent\': params.get(\'utm_content\') || \'null\',\n' +
+        '      \'inf_custom_GaReferurl\': ref,\n' +
+        '      \'inf_custom_GaCampaignID\': params.get(\'utm_id\') || \'null\'\n' +
+        '    };\n' +
+        '    for (const [name, val] of Object.entries(fields)) {\n' +
+        '      const input = form.querySelector(\'input[name="\' + name + \'"]\');\n' +
+        '      if (input) input.value = val;\n' +
+        '    }\n' +
+        '  }\n\n' +
+        '  function parseName(full) {\n' +
+        '    const parts = full.trim().split(\' \');\n' +
+        '    return {\n' +
+        '      firstName: parts.slice(0, -1).join(\' \') || \'\',\n' +
+        '      lastName: parts.slice(-1).join(\' \') || \'\'\n' +
+        '    };\n' +
+        '  }\n\n' +
+        '  function attachSubmitListener() {\n' +
+        '    const button = document.querySelector(\'.wf_button_text\');\n' +
+        '    if (button) {\n' +
+        '      console.log("🔗 WF modal submit button found");\n' +
+        '      button.addEventListener(\'click\', () => {\n' +
+        '        console.log("⏳ WF button clicked. Waiting...");\n' +
+        '        setTimeout(submitInfForm, 600);\n' +
+        '      });\n' +
+        '    } else {\n' +
+        '      console.log("🕵️ WF submit button not found, retrying...");\n' +
+        '      setTimeout(attachSubmitListener, 500);\n' +
+        '    }\n' +
+        '  }\n\n' +
+        '  attachSubmitListener();\n' +
         '});\n' +
     '<\\/script>';
     }
