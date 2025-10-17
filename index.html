@@ -1048,18 +1048,6 @@
     };
 
     // Code Generation
-    // Test function to manually show modal
-    window.testModal = function() {
-      console.log('🧪 Testing modal display...');
-      const modal = document.getElementById('codeModal');
-      if (modal) {
-        document.getElementById('codePreview').textContent = 'Test code content';
-        modal.classList.add('active');
-        modal.style.display = 'flex';
-        console.log('✅ Test modal shown');
-      }
-    };
-
     window.generateCode = async function() {
       if (!app.currentForm) return;
 
@@ -1090,27 +1078,24 @@
       }
 
       console.log('✅ Validation passed - generating code');
-      alert('Debug: About to generate code'); // Debug alert
       
       try {
-        console.log('🔄 Step 1: Calling generateEmbedCode...');
+        console.log('🔄 Generating embed code...');
         const code = generateEmbedCode(app.currentForm, bearerToken);
-        console.log('📝 Step 2: Generated code length:', code.length);
+        console.log('📝 Generated code length:', code.length);
         
-        console.log('🔄 Step 3: Finding codePreview element...');
         const codePreview = document.getElementById('codePreview');
         if (codePreview) {
           codePreview.textContent = code;
-          console.log('✅ Step 4: Code set in preview element');
+          console.log('✅ Code set in preview element');
         } else {
           console.error('❌ Code preview element not found!');
           return;
         }
         
-        console.log('🔄 Step 5: Setting up modal display...');
         // Use setTimeout to ensure DOM updates complete
         setTimeout(() => {
-          console.log('📋 Step 6: Opening modal...');
+          console.log('📋 Opening modal...');
           const modal = document.getElementById('codeModal');
           if (modal) {
             modal.classList.add('active');
@@ -1118,9 +1103,7 @@
             modal.style.display = 'flex';
             modal.style.alignItems = 'center';
             modal.style.justifyContent = 'center';
-            console.log('✅ Step 7: Modal classList:', modal.classList.toString());
-            console.log('✅ Step 8: Modal style display:', window.getComputedStyle(modal).display);
-            alert('Debug: Modal should now be visible!'); // Debug confirmation
+            console.log('✅ Modal displayed successfully');
           } else {
             console.error('❌ Code modal element not found!');
           }
@@ -1128,7 +1111,7 @@
         
       } catch (error) {
         console.error('❌ Error in generateCode:', error);
-        alert('Debug: Error occurred - ' + error.message);
+        showToast('Error generating code: ' + error.message);
       }
     };
 
