@@ -233,9 +233,15 @@
       font-family: 'Courier New', monospace;
       font-size: 12px;
       white-space: pre-wrap;
+      word-wrap: break-word;
+      word-break: break-all;
+      overflow-wrap: break-word;
       max-height: 400px;
       overflow-y: auto;
+      overflow-x: auto;
       margin-bottom: 20px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .code-actions {
@@ -769,18 +775,21 @@
         '      console.log("✅ SMS consent checkbox checked");\n' +
         '    }\n\n' +
         '    try {\n' +
-        '      // Submit form data using fetch to avoid page redirect\n' +
-        '      const formData = new FormData(form);\n' +
+        '      // Submit form using hidden iframe to avoid page redirect\n' +
+        '      const iframe = document.createElement("iframe");\n' +
+        '      iframe.style.display = "none";\n' +
+        '      iframe.name = "hiddenFrame";\n' +
+        '      document.body.appendChild(iframe);\n' +
         '      \n' +
-        '      fetch(form.action, {\n' +
-        '        method: "POST",\n' +
-        '        body: formData,\n' +
-        '        mode: "no-cors" // Infusionsoft doesn\'t support CORS, but we still want to send\n' +
-        '      }).then(() => {\n' +
-        '        console.log("🎉 Successfully submitted to Infusionsoft!");\n' +
-        '      }).catch((error) => {\n' +
-        '        console.log("📤 Infusionsoft submission sent (CORS blocked response is normal)");\n' +
-        '      });\n' +
+        '      form.target = "hiddenFrame";\n' +
+        '      form.submit();\n' +
+        '      \n' +
+        '      console.log("🎉 Successfully submitted to Infusionsoft via hidden iframe!");\n' +
+        '      \n' +
+        '      // Clean up iframe after a short delay\n' +
+        '      setTimeout(() => {\n' +
+        '        document.body.removeChild(iframe);\n' +
+        '      }, 3000);\n' +
         '    } catch (error) {\n' +
         '      console.error("❌ Infusionsoft submission failed:", error);\n' +
         '    }\n' +
