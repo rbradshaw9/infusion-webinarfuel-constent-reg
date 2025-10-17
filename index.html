@@ -500,13 +500,39 @@
       document.getElementById('logoutBtn').addEventListener('click', logout);
       document.getElementById('settingsBtn').addEventListener('click', openSettings);
       document.getElementById('newFormBtn').addEventListener('click', createNewForm);
-      document.getElementById('closeCodeBtn').addEventListener('click', closeCodeModal);
+      
+      const closeBtn = document.getElementById('closeCodeBtn');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeCodeModal);
+        console.log('✅ Close button event listener attached');
+      } else {
+        console.error('❌ Close button not found!');
+      }
+      
       document.getElementById('closeSettingsBtn').addEventListener('click', closeSettings);
       document.getElementById('closeSettings2Btn').addEventListener('click', closeSettings);
       document.getElementById('copyCodeBtn').addEventListener('click', copyCode);
       document.getElementById('downloadCodeBtn').addEventListener('click', downloadCode);
       document.getElementById('updatePasswordBtn').addEventListener('click', updatePassword);
       document.getElementById('saveBearerBtn').addEventListener('click', saveBearerToken);
+      
+      // Click outside to close modal
+      const codeModal = document.getElementById('codeModal');
+      if (codeModal) {
+        codeModal.addEventListener('click', function(e) {
+          if (e.target === codeModal) {
+            closeCodeModal();
+          }
+        });
+        console.log('✅ Click-outside-to-close event listener attached');
+      }
+      
+      // Escape key to close modal
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && codeModal && codeModal.classList.contains('active')) {
+          closeCodeModal();
+        }
+      });
     }
 
     // Authentication
@@ -825,6 +851,21 @@
                  placeholder="🔥 Reserve My Free Seat Now">
         </div>
 
+        <div class="form-group">
+          <label>Generation Type</label>
+          <select id="generationType" onchange="toggleGenerationType()">
+            <option value="standalone" ${app.currentForm.generation_type !== 'bridge' ? 'selected' : ''}>
+              🎯 Standalone Form (Complete embedded form)
+            </option>
+            <option value="bridge" ${app.currentForm.generation_type === 'bridge' ? 'selected' : ''}>
+              🌉 Bridge Setup (Hidden form + bridge script)
+            </option>
+          </select>
+          <small style="color: #6b7280; margin-top: 8px; display: block;">
+            Standalone: Complete form with styling. Bridge: Hidden form that works with WebinarFuel embeds.
+          </small>
+        </div>
+
         <div class="button-group">
           <button class="btn-primary" onclick="window.saveCurrentForm()">💾 Save Form</button>
           <button class="btn-success" onclick="window.generateCode()">🚀 Generate Code</button>
@@ -858,6 +899,7 @@
       app.currentForm.consent_value = document.getElementById('consentValue').value;
       app.currentForm.consent_message = document.getElementById('consentMessage').value;
       app.currentForm.button_text = document.getElementById('buttonText').value;
+      app.currentForm.generation_type = document.getElementById('generationType').value;
       app.currentForm.is_replay = document.getElementById('isReplay').checked;
       
       // Save pasted data for persistence
@@ -1048,6 +1090,11 @@
     };
 
     // Code Generation
+    window.toggleGenerationType = function() {
+      // Future: Could add type-specific UI changes here
+      console.log('Generation type changed to:', document.getElementById('generationType').value);
+    };
+
     window.generateCode = async function() {
       if (!app.currentForm) return;
 
@@ -1761,7 +1808,15 @@
     }
 
     function closeCodeModal() {
-      document.getElementById('codeModal').classList.remove('active');
+      console.log('🚪 Closing code modal...');
+      const modal = document.getElementById('codeModal');
+      if (modal) {
+        modal.classList.remove('active');
+        modal.style.display = 'none'; // Force display none
+        console.log('✅ Modal closed');
+      } else {
+        console.error('❌ Modal element not found when trying to close');
+      }
     }
 
     function copyCode() {
