@@ -713,7 +713,7 @@
 
     async function renderFormEditor() {
       const container = document.getElementById('editorContent');
-      const hasBearerToken = !!(await getBearerToken());
+      const hasBearerToken = true; // Bearer token is hardcoded, always available
       
       container.innerHTML = `
         <h2>✏️ Edit Form: ${escapeHtml(app.currentForm.name)}</h2>
