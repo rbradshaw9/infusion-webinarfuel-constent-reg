@@ -1082,12 +1082,12 @@
       }
 
       console.log('✅ Validation passed - generating code');
-      const code = generateEmbedCode(app.currentForm, bearerToken);
+      const code = generateEmbedCode(app.currentForm);
       document.getElementById('codePreview').textContent = code;
       document.getElementById('codeModal').classList.add('active');
     };
 
-    function generateEmbedCode(form, bearerToken) {
+    function generateEmbedCode(form) {
       const formId = 'inf_form_' + form.infusionsoft_xid;
       
       return `<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
