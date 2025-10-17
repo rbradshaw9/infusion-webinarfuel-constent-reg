@@ -673,7 +673,7 @@
         wf_widget_id: '',
         wf_widget_version: '',
         consent_id: 'inf_option_SMSConsent',
-        consent_value: '3872',
+        consent_value: '',
         consent_message: 'By checking this box, I agree to receive text messages (such as reminders, updates, and promotional offers) from The Cash Flow Academy at the mobile number provided. Message and data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply STOP to unsubscribe.',
         button_text: '🔥 Reserve My Free Seat Now',
         is_replay: false,
@@ -816,7 +816,7 @@
 
         <div class="form-group">
           <label>SMS Consent Checkbox Value</label>
-          <input type="text" id="consentValue" value="${escapeHtml(app.currentForm.consent_value || '3872')}" 
+          <input type="text" id="consentValue" value="${escapeHtml(app.currentForm.consent_value || '')}" 
                  placeholder="3872">
           <small>The value attribute for the checkbox (extracted from Infusionsoft form)</small>
         </div>
@@ -920,8 +920,12 @@
         const nameInput = form.querySelector('input[name="inf_form_name"]');
         if (nameInput) document.getElementById('infusionsoftFormName').value = nameInput.value;
 
+        // Extract consent checkbox - try multiple selectors
         const consentId = form.dataset.consentId;
-        const checkbox = form.querySelector('input[type="checkbox"][name*="Bycheckingthisbox"]');
+        let checkbox = form.querySelector('input[type="checkbox"][name*="Bycheckingthisbox"]') ||
+                      form.querySelector('input[type="checkbox"][name*="inf_option"]') ||
+                      form.querySelector('input[type="checkbox"][id*="inf_option"]') ||
+                      form.querySelector('input[type="checkbox"]');
         
         if (consentId) {
           document.getElementById('consentId').value = consentId;
@@ -929,11 +933,26 @@
           document.getElementById('consentId').value = checkbox.id || checkbox.name;
         }
         
-        // Extract checkbox value if present and store it
-        if (checkbox && checkbox.value && app.currentForm) {
-          app.currentForm.consent_value = checkbox.value;
-          console.log('[Extract] Checkbox value:', checkbox.value);
+        // Extract and update checkbox value
+        if (checkbox && checkbox.value) {
+          document.getElementById('consentValue').value = checkbox.value;
+          if (app.currentForm) {
+            app.currentForm.consent_value = checkbox.value;
+          }
+          console.log('[Extract] Consent checkbox found:', {
+            id: checkbox.id,
+            name: checkbox.name,
+            value: checkbox.value
+          });
         }
+        
+        console.log('[Extract] Extraction results:', {
+          action: action,
+          xid: xidInput ? xidInput.value : 'Not found',
+          formName: nameInput ? nameInput.value : 'Not found',
+          consentId: checkbox ? (checkbox.id || checkbox.name) : 'Not found',
+          consentValue: checkbox ? checkbox.value : 'Not found'
+        });
 
         showToast('Infusionsoft data extracted! ✨', 'success');
         document.getElementById('infusionsoftPaste').value = '';
@@ -961,6 +980,13 @@
         // Method 2: Extract from path
         const pathParts = urlObj.pathname.split('/').filter(p => p);
         
+        console.log('🔍 WebinarFuel URL extraction debug:', {
+          url: url,
+          pathParts: pathParts,
+          widgetId: widgetId,
+          versionId: versionId
+        });
+        
         // Format: /webinars/18213/widgets/72956/124066/elements
         if (pathParts.includes('widgets')) {
           const widgetsIndex = pathParts.indexOf('widgets');
@@ -986,6 +1012,23 @@
         // Set the extracted values
         if (widgetId) document.getElementById('wfWidgetId').value = widgetId;
         if (versionId) document.getElementById('wfWidgetVersion').value = versionId;
+        
+        console.log('✅ Extracted values:', {
+          widgetId: widgetId,
+          versionId: versionId,
+          bearerToken: bearerToken ? 'Found' : 'None'
+        });
+        
+        // Test extraction with your specific URL format
+        // URL: https://app.webinarfuel.com/webinars/15653/widgets/58019/108280/elements
+        // Should extract: widgetId=58019, versionId=108280
+        console.log('🧪 Testing extraction for URL format like yours:', {
+          expectedWidgetId: '58019',
+          expectedVersionId: '108280', 
+          actualWidgetId: widgetId,
+          actualVersionId: versionId,
+          extractionSuccess: !!(widgetId && versionId)
+        });
         
         // Save bearer token if found
         const currentToken = await getBearerToken();
@@ -1053,14 +1096,8 @@
     function generateEmbedCode(form, bearerToken) {
       const formId = 'inf_form_' + form.infusionsoft_xid;
       
-      return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Webinar Registration</title>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style>
+      return `<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
     * {
       box-sizing: border-box;
       margin: 0;
@@ -1254,9 +1291,8 @@
         margin-bottom: 14px;
       }
     }
-  </style>
-</head>
-<body>
+</style>
+
 <form accept-charset="UTF-8"
       action="${form.infusionsoft_action}"
       class="infusion-form"
@@ -1291,7 +1327,7 @@
   </div>
   <div class="infusion-field">
     <label class="sms-consent-row" for="${form.consent_id}">
-      <input id="${form.consent_id}" name="${form.consent_id}" type="checkbox" value="${form.consent_value || '3872'}" />
+      <input id="${form.consent_id}" name="${form.consent_id}" type="checkbox" value="${form.consent_value || ''}" />
       <span class="sms-consent-text">
         ${form.consent_message || 'By checking this box, I agree to receive text messages (such as reminders, updates, and promotional offers) from The Cash Flow Academy at the mobile number provided. Message and data rates may apply. Message frequency varies. Consent is not a condition of purchase. Reply STOP to unsubscribe.'}
       </span>
@@ -1699,9 +1735,7 @@
     initWFBridge('${formId}');
   }
 })();
-<` + `/script>
-</body>
-</html>`;
+<` + `/script>`;
     }
 
     function closeCodeModal() {

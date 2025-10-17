@@ -1,15 +1,19 @@
-# Webinar Registration Form Generator
+# WebinarFuel Registration Form Generator
 
-A simple, single-file admin tool to generate Infusionsoft + WebinarFuel dual-registration forms.
+A powerful tool for generating dual-registration forms that submit to both Infusionsoft and WebinarFuel simultaneously.
+
+## 🚀 Live Demo
+
+Deploy to Vercel for instant access: [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/rbradshaw9/infusion-webinarfuel-constent-reg)
 
 ## 🚀 Quick Start
 
-1. **Open `admin.html`** in your browser
+1. **Visit the live site** (or open `index.html` locally)
 2. **Login** with password: `admin123`
-3. **Create a new form** and fill in your configuration
-4. **Generate the embed code** and copy it to your website
+3. **Create a new form** and fill in your configuration  
+4. **Generate the embed code** and copy it to your website's custom HTML block
 
-That's it! No installation, no servers, no complexity.
+No installation, no servers, no complexity - just paste and go!
 
 ## 📋 What It Does
 
