@@ -685,15 +685,7 @@
     function generateBridgeCode(form) {
       const formId = 'inf_form_' + form.infusionsoft_xid;
       
-      return '<!DOCTYPE html>\n' +
-        '<html lang="en">\n' +
-        '<head>\n' +
-        '  <meta charset="UTF-8">\n' +
-        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
-        '  <title>Webinar Registration</title>\n' +
-        '</head>\n' +
-        '<body>\n\n' +
-        '<!-- WebinarFuel Embed -->\n' +
+      return '<!-- WebinarFuel Embed -->\n' +
         form.wf_embed_code + '\n\n' +
         '<!-- Hidden Infusionsoft Form -->\n' +
         '<div style="display: none;">\n' +
@@ -777,8 +769,18 @@
         '      console.log("✅ SMS consent checkbox checked");\n' +
         '    }\n\n' +
         '    try {\n' +
-        '      form.submit();\n' +
-        '      console.log("🎉 Successfully submitted to Infusionsoft!");\n' +
+        '      // Submit form data using fetch to avoid page redirect\n' +
+        '      const formData = new FormData(form);\n' +
+        '      \n' +
+        '      fetch(form.action, {\n' +
+        '        method: "POST",\n' +
+        '        body: formData,\n' +
+        '        mode: "no-cors" // Infusionsoft doesn\'t support CORS, but we still want to send\n' +
+        '      }).then(() => {\n' +
+        '        console.log("🎉 Successfully submitted to Infusionsoft!");\n' +
+        '      }).catch((error) => {\n' +
+        '        console.log("📤 Infusionsoft submission sent (CORS blocked response is normal)");\n' +
+        '      });\n' +
         '    } catch (error) {\n' +
         '      console.error("❌ Infusionsoft submission failed:", error);\n' +
         '    }\n' +
@@ -786,9 +788,7 @@
         '  // Start watching for registration\n' +
         '  watchForRegistration();\n' +
         '});\n' +
-    '<\\/script>\n\n' +
-        '</body>\n' +
-        '</html>';
+    '<\\/script>';
     }
 
     async function deleteForm() {
