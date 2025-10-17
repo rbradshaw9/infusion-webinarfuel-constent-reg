@@ -1048,6 +1048,18 @@
     };
 
     // Code Generation
+    // Test function to manually show modal
+    window.testModal = function() {
+      console.log('🧪 Testing modal display...');
+      const modal = document.getElementById('codeModal');
+      if (modal) {
+        document.getElementById('codePreview').textContent = 'Test code content';
+        modal.classList.add('active');
+        modal.style.display = 'flex';
+        console.log('✅ Test modal shown');
+      }
+    };
+
     window.generateCode = async function() {
       if (!app.currentForm) return;
 
