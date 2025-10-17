@@ -955,7 +955,7 @@
         });
 
         showToast('Infusionsoft data extracted! ✨', 'success');
-        document.getElementById('infusionsoftPaste').value = '';
+        // Keep the pasted content in the field for reference
       } catch (error) {
         console.error('Extract error:', error);
         showToast('Failed to extract data. Check the HTML format ❌');
@@ -1041,8 +1041,7 @@
         
         if (extracted) {
           showToast('WebinarFuel data extracted! ✨', 'success');
-          document.getElementById('webinarFuelUrl').value = '';
-          // Don't re-render the form, just clear the URL field
+          // Keep the URL in the field for reference
         } else {
           showToast('Could not extract data from URL. Please check the format ⚠️');
         }
@@ -1059,13 +1058,8 @@
       // Save current form data first to ensure fields are up to date
       await window.saveCurrentForm();
 
-      const bearerToken = await getBearerToken();
-
-      if (!bearerToken) {
-        showToast('Please set Bearer Token in Settings first ⚠️');
-        await openSettings();
-        return;
-      }
+      // Use hardcoded bearer token
+      const bearerToken = 'Dp2kG9Vucpyq5t5RVPqvDxfU';
 
       // Check WebinarFuel fields
       const sessionId = (app.currentForm.wf_session_id || '').trim();
