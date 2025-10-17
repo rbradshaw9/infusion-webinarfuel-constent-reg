@@ -18,6 +18,10 @@
     {
       "src": "/bridge",
       "dest": "/bridge-admin.html"
+    },
+    {
+      "src": "/bridge-admin.html",
+      "dest": "/bridge-admin.html"
     }
   ]
 }
