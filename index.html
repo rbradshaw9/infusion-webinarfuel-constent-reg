@@ -728,13 +728,13 @@
         
         <div class="form-group">
           <label>Paste Infusionsoft Form HTML</label>
-          <textarea id="infusionsoftPaste" placeholder="Paste your entire Infusionsoft <form> HTML here and we'll extract the values automatically..." rows="4"></textarea>
+          <textarea id="infusionsoftPaste" placeholder="Paste your entire Infusionsoft <form> HTML here and we'll extract the values automatically..." rows="4">${escapeHtml(app.currentForm.infusionsoft_paste || '')}</textarea>
           <button class="btn-secondary btn-small" onclick="window.extractInfusionsoft()" style="margin-top: 8px;">🔍 Extract Infusionsoft Data</button>
         </div>
 
         <div class="form-group">
           <label>WebinarFuel Widget URL</label>
-          <input type="url" id="webinarFuelUrl" placeholder="https://app.webinarfuel.com/webinars/18213/widgets/72956/124066/elements">
+          <input type="url" id="webinarFuelUrl" value="${escapeHtml(app.currentForm.webinarfuel_url || '')}" placeholder="https://app.webinarfuel.com/webinars/18213/widgets/72956/124066/elements">
           <button class="btn-secondary btn-small" onclick="window.extractWebinarFuel()" style="margin-top: 8px;">🔍 Extract WebinarFuel Data</button>
           <small>Paste the WebinarFuel widget URL to extract Widget ID and Version</small>
         </div>
@@ -859,6 +859,10 @@
       app.currentForm.consent_message = document.getElementById('consentMessage').value;
       app.currentForm.button_text = document.getElementById('buttonText').value;
       app.currentForm.is_replay = document.getElementById('isReplay').checked;
+      
+      // Save pasted data for persistence
+      app.currentForm.infusionsoft_paste = document.getElementById('infusionsoftPaste').value;
+      app.currentForm.webinarfuel_url = document.getElementById('webinarFuelUrl').value;
 
       await saveForms();
       renderFormsList();
@@ -1075,16 +1079,28 @@
 
       console.log('✅ Validation passed - generating code');
       const code = generateEmbedCode(app.currentForm);
-      document.getElementById('codePreview').textContent = code;
+      console.log('📝 Generated code length:', code.length);
       
-      console.log('📋 Code generated, opening modal...');
-      const modal = document.getElementById('codeModal');
-      if (modal) {
-        modal.classList.add('active');
-        console.log('✅ Modal should now be visible');
+      const codePreview = document.getElementById('codePreview');
+      if (codePreview) {
+        codePreview.textContent = code;
+        console.log('✅ Code set in preview element');
       } else {
-        console.error('❌ Code modal element not found!');
+        console.error('❌ Code preview element not found!');
       }
+      
+      // Use setTimeout to ensure DOM updates complete
+      setTimeout(() => {
+        console.log('📋 Opening modal...');
+        const modal = document.getElementById('codeModal');
+        if (modal) {
+          modal.classList.add('active');
+          console.log('✅ Modal classList:', modal.classList.toString());
+          console.log('✅ Modal style display:', window.getComputedStyle(modal).display);
+        } else {
+          console.error('❌ Code modal element not found!');
+        }
+      }, 100);
     };
 
     function generateEmbedCode(form) {
