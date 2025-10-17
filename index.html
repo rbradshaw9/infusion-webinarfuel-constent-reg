@@ -627,35 +627,27 @@
     // Make openSettings available globally for the link
     window.openSettings = openSettings;
 
-    // Forms Management (now uses file-based API)
+    // Forms Management (uses localStorage for static deployment)
     async function loadForms() {
       try {
-        const response = await fetch('./api.php/forms');
-        const formsData = await response.json();
-        app.forms = Array.isArray(formsData) ? formsData : Object.values(formsData || {});
-      } catch (error) {
-        console.error('Error loading forms:', error);
-        // Fallback to localStorage
+        // Load from localStorage
         const stored = localStorage.getItem(app.STORAGE_KEYS.FORMS);
         app.forms = stored ? JSON.parse(stored) : [];
+        console.log('Forms loaded from localStorage:', app.forms.length, 'forms');
+      } catch (error) {
+        console.error('Error loading forms from localStorage:', error);
+        app.forms = [];
       }
     }
 
     async function saveForms() {
       try {
-        const response = await fetch('./api.php/forms', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(app.forms)
-        });
-        if (response.ok) {
-          // Also save to localStorage as backup
-          localStorage.setItem(app.STORAGE_KEYS.FORMS, JSON.stringify(app.forms));
-        }
-      } catch (error) {
-        console.error('Error saving forms:', error);
-        // Fallback to localStorage
+        // Save to localStorage (client-side storage)
         localStorage.setItem(app.STORAGE_KEYS.FORMS, JSON.stringify(app.forms));
+        console.log('Forms saved to localStorage:', app.forms.length, 'forms');
+      } catch (error) {
+        console.error('Error saving forms to localStorage:', error);
+        showToast('Failed to save forms ❌', 'error');
       }
     }
 
@@ -1084,7 +1076,15 @@
       console.log('✅ Validation passed - generating code');
       const code = generateEmbedCode(app.currentForm);
       document.getElementById('codePreview').textContent = code;
-      document.getElementById('codeModal').classList.add('active');
+      
+      console.log('📋 Code generated, opening modal...');
+      const modal = document.getElementById('codeModal');
+      if (modal) {
+        modal.classList.add('active');
+        console.log('✅ Modal should now be visible');
+      } else {
+        console.error('❌ Code modal element not found!');
+      }
     };
 
     function generateEmbedCode(form) {
