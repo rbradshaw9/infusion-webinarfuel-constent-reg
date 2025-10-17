@@ -250,7 +250,7 @@
     }
 
     .modal.active {
-      display: flex;
+      display: flex !important;
       align-items: center;
       justify-content: center;
     }
@@ -1078,6 +1078,7 @@
       }
 
       console.log('✅ Validation passed - generating code');
+      alert('Debug: About to generate code'); // Debug alert
       const code = generateEmbedCode(app.currentForm);
       console.log('📝 Generated code length:', code.length);
       
@@ -1095,6 +1096,10 @@
         const modal = document.getElementById('codeModal');
         if (modal) {
           modal.classList.add('active');
+          // Force display with inline styles as fallback
+          modal.style.display = 'flex';
+          modal.style.alignItems = 'center';
+          modal.style.justifyContent = 'center';
           console.log('✅ Modal classList:', modal.classList.toString());
           console.log('✅ Modal style display:', window.getComputedStyle(modal).display);
         } else {
